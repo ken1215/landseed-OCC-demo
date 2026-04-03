@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCC 物業戰情管理中心</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+  --space-12: 3rem; --space-16: 4rem;
+  --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
+  --radius-xl: 1rem; --radius-full: 9999px;
+  --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --font-body: 'Satoshi', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* DARK MODE (Default for OCC) */
+:root, [data-theme="dark"] {
+  --color-bg: #0f1117;
+  --color-surface: #151820;
+  --color-surface-2: #1a1e2a;
+  --color-surface-offset: #1e2330;
+  --color-surface-offset-2: #232838;
+  --color-surface-dynamic: #2a3040;
+  --color-divider: #2e3545;
+  --color-border: #354055;
+  --color-text: #e2e6f0;
+  --color-text-muted: #8892aa;
+  --color-text-faint: #4a5468;
+  --color-text-inverse: #0f1117;
+  --color-primary: #4f8ef7;
+  --color-primary-hover: #3b7be3;
+  --color-primary-active: #2868d0;
+  --color-primary-highlight: #1a2a45;
+  --color-success: #34d399;
+  --color-success-hover: #10b981;
+  --color-success-highlight: #0d2e23;
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-warning-highlight: #2e2008;
+  --color-error: #f87171;
+  --color-error-hover: #ef4444;
+  --color-error-highlight: #2e1515;
+  --color-orange: #fb923c;
+  --color-orange-highlight: #2e1a0a;
+  --color-purple: #a78bfa;
+  --color-purple-highlight: #1e1535;
+  --color-teal: #2dd4bf;
+  --color-teal-highlight: #0d2e2a;
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.5);
+}
+
+[data-theme="light"] {
+  --color-bg: #f0f2f7;
+  --color-surface: #f7f8fc;
+  --color-surface-2: #ffffff;
+  --color-surface-offset: #e8ebf3;
+  --color-surface-offset-2: #dde0ec;
+  --color-surface-dynamic: #d0d4e4;
+  --color-divider: #c8ccd8;
+  --color-border: #b8bdd0;
+  --color-text: #1a1e2e;
+  --color-text-muted: #4a5270;
+  --color-text-faint: #8892aa;
+  --color-text-inverse: #f7f8fc;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-active: #1e40af;
+  --color-primary-highlight: #dbeafe;
+  --color-success: #059669;
+  --color-success-hover: #047857;
+  --color-success-highlight: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-hover: #b45309;
+  --color-warning-highlight: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-hover: #b91c1c;
+  --color-error-highlight: #fee2e2;
+  --color-orange: #ea580c;
+  --color-orange-highlight: #ffedd5;
+  --color-purple: #7c3aed;
+  --color-purple-highlight: #ede9fe;
+  --color-teal: #0d9488;
+  --color-teal-highlight: #ccfbf1;
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 250 / 0.08);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 250 / 0.10);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.01 250 / 0.14);
+}
+
+/* ===== BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body { min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text); background: var(--color-bg); overflow-x: hidden; }
+img, svg { display: block; max-width: 100%; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+a, button, [role="button"] { transition: color var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive), box-shadow var(--transition-interactive); }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+
+/* ===== LAYOUT ===== */
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 52px 1fr;
+  grid-template-areas: "sidebar topbar" "sidebar main";
+  min-height: 100dvh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  grid-area: sidebar;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-divider);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  z-index: 100;
+}
+.sidebar-logo {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-text { font-weight: 700; font-size: var(--text-sm); line-height: 1.2; }
+.logo-sub { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 400; }
+.sidebar-section-label {
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.sidebar-nav { padding: 0 var(--space-2); flex: 1; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  transition: all var(--transition-interactive);
+  position: relative;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-highlight); color: var(--color-primary); }
+.nav-item .nav-badge {
+  margin-left: auto;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  min-width: 18px;
+  text-align: center;
+}
+.nav-item .nav-badge.warn { background: var(--color-warning); }
+.nav-item .nav-badge.info { background: var(--color-primary); }
+.sidebar-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-divider);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+.site-indicator {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs); color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-offset);
+  border-radius: var(--radius-md);
+  margin: var(--space-2) var(--space-2) 0;
+}
+.site-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+
+/* ===== TOPBAR ===== */
+.topbar {
+  grid-area: topbar;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  gap: var(--space-4);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+.topbar-title { font-size: var(--text-base); font-weight: 600; flex: 1; }
+.topbar-clock {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface-offset);
+  border-radius: var(--radius-md);
+}
+.topbar-actions { display: flex; align-items: center; gap: var(--space-2); }
+.btn-icon {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  position: relative;
+}
+.btn-icon:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-error);
+  border: 1.5px solid var(--color-surface);
+}
+
+/* ===== MAIN ===== */
+.main {
+  grid-area: main;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  background: var(--color-bg);
+}
+
+/* ===== ALERT BANNER ===== */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-error-highlight);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  font-weight: 500;
+}
+.alert-banner.warn { background: var(--color-warning-highlight); border-color: var(--color-warning); color: var(--color-warning); }
+
+/* ===== KPI ROW ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+  gap: var(--space-4);
+}
+.kpi-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: box-shadow var(--transition-interactive);
+}
+.kpi-card:hover { box-shadow: var(--shadow-md); }
+.kpi-header { display: flex; align-items: center; justify-content: space-between; }
+.kpi-label { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.kpi-icon { width: 28px; height: 28px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+.kpi-value { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 700; color: var(--color-text); line-height: 1; font-variant-numeric: tabular-nums lining-nums; }
+.kpi-meta { font-size: var(--text-xs); color: var(--color-text-muted); display: flex; align-items: center; gap: var(--space-1); }
+.kpi-meta .up { color: var(--color-success); }
+.kpi-meta .down { color: var(--color-error); }
+.kpi-meta .warn { color: var(--color-warning); }
+
+/* ===== CONTENT GRID ===== */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-6);
+}
+@media (max-width: 1100px) { .content-grid { grid-template-columns: 1fr; } }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.card-title { font-size: var(--text-sm); font-weight: 600; display: flex; align-items: center; gap: var(--space-2); }
+.card-body { padding: var(--space-4) var(--space-5); }
+.card-actions { display: flex; gap: var(--space-2); }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm); font-weight: 600;
+  cursor: pointer; border: none; transition: all var(--transition-interactive);
+  white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-secondary { background: var(--color-surface-offset); color: var(--color-text); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background: var(--color-surface-dynamic); }
+.btn-ghost { background: transparent; color: var(--color-text-muted); }
+.btn-ghost:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.btn-danger { background: var(--color-error-highlight); color: var(--color-error); border: 1px solid var(--color-error); }
+.btn-danger:hover { background: var(--color-error); color: #fff; }
+.btn-sm { padding: var(--space-1) var(--space-3); font-size: var(--text-xs); }
+.btn-xs { padding: 2px var(--space-2); font-size: 11px; }
+
+/* ===== BADGES / STATUS ===== */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px var(--space-2); border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.badge-success { background: var(--color-success-highlight); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-highlight); color: var(--color-warning); }
+.badge-error { background: var(--color-error-highlight); color: var(--color-error); }
+.badge-info { background: var(--color-primary-highlight); color: var(--color-primary); }
+.badge-orange { background: var(--color-orange-highlight); color: var(--color-orange); }
+.badge-purple { background: var(--color-purple-highlight); color: var(--color-purple); }
+.badge-teal { background: var(--color-teal-highlight); color: var(--color-teal); }
+.badge-neutral { background: var(--color-surface-dynamic); color: var(--color-text-muted); }
+
+/* ===== WORK ORDER TABLE ===== */
+.wo-table { width: 100%; border-collapse: collapse; }
+.wo-table th { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-faint); text-transform: uppercase; letter-spacing: 0.06em; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-divider); text-align: left; white-space: nowrap; }
+.wo-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-divider); font-size: var(--text-sm); vertical-align: middle; }
+.wo-table tr:last-child td { border-bottom: none; }
+.wo-table tr:hover td { background: var(--color-surface-offset); }
+.wo-table .wo-id { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.wo-table .wo-title { font-weight: 500; }
+.wo-table .wo-meta { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+/* ===== TIMER ===== */
+.timer-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-shadow: 0 0 0 1px var(--color-error-highlight);
+}
+.timer-ring-wrap { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.timer-ring { transform: rotate(-90deg); }
+.timer-ring-bg { fill: none; stroke: var(--color-surface-offset); stroke-width: 5; }
+.timer-ring-fg { fill: none; stroke: var(--color-error); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.timer-inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--color-error); }
+.timer-info { flex: 1; min-width: 0; }
+.timer-label { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500; margin-bottom: var(--space-1); }
+.timer-title { font-size: var(--text-sm); font-weight: 600; }
+.timer-sub { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+.timers-list { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* ===== EMERGENCY SOP ===== */
+.sop-flow { display: flex; flex-direction: column; gap: var(--space-3); }
+.sop-step {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-divider);
+  background: var(--color-surface-2);
+  cursor: pointer;
+  transition: all var(--transition-interactive);
+}
+.sop-step:hover { border-color: var(--color-primary); background: var(--color-primary-highlight); }
+.sop-step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: 700; flex-shrink: 0; }
+.sop-step-info { flex: 1; }
+.sop-step-title { font-size: var(--text-sm); font-weight: 600; }
+.sop-step-desc { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; line-height: 1.5; }
+.sop-arrow { color: var(--color-text-faint); display: flex; align-items: center; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: oklch(0 0 0 / 0.6);
+  z-index: 1000; display: none; align-items: center; justify-content: center;
+  padding: var(--space-4); backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 560px;
+  max-height: 90dvh; overflow-y: auto;
+  animation: modal-in 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes modal-in { from { opacity:0; transform:scale(0.95) translateY(8px) } to { opacity:1; transform:scale(1) translateY(0) } }
+.modal-header { padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-divider); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: var(--text-base); font-weight: 700; }
+.modal-body { padding: var(--space-5) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+.modal-footer { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-divider); display: flex; justify-content: flex-end; gap: var(--space-3); }
+.form-group { display: flex; flex-direction: column; gap: var(--space-2); }
+.form-label { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.form-input, .form-select, .form-textarea {
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  color: var(--color-text);
+  transition: border-color var(--transition-interactive);
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-highlight); }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+
+/* ===== ACTIVITY FEED ===== */
+.activity-list { display: flex; flex-direction: column; }
+.activity-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-divider); }
+.activity-item:last-child { border-bottom: none; }
+.activity-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 0; padding-top: 4px; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.activity-line { width: 1px; background: var(--color-divider); flex: 1; margin-top: 4px; }
+.activity-item:last-child .activity-line { display: none; }
+.activity-content { flex: 1; min-width: 0; }
+.activity-title { font-size: var(--text-sm); font-weight: 500; line-height: 1.4; }
+.activity-time { font-size: var(--text-xs); color: var(--color-text-muted); font-family: var(--font-mono); margin-top: 2px; }
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar { height: 6px; background: var(--color-surface-dynamic); border-radius: var(--radius-full); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.5s ease; }
+
+/* ===== TABS ===== */
+.tabs { display: flex; gap: 2px; background: var(--color-surface-offset); padding: 3px; border-radius: var(--radius-lg); }
+.tab-btn { flex: 1; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--color-text-muted); transition: all var(--transition-interactive); text-align: center; }
+.tab-btn.active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); }
+
+/* ===== SECTION PANELS ===== */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ===== DIVIDER ===== */
+.divider { height: 1px; background: var(--color-divider); margin: var(--space-3) 0; }
+
+/* ===== EQUIPMENT STATUS ===== */
+.equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px,100%),1fr)); gap: var(--space-3); }
+.equip-card { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); }
+.equip-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+.equip-name { font-size: var(--text-sm); font-weight: 600; }
+.equip-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-1) 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+.equip-row span:last-child { color: var(--color-text); font-weight: 500; }
+
+/* ===== ENERGY ===== */
+.energy-bars { display: flex; flex-direction: column; gap: var(--space-3); }
+.energy-row { display: flex; flex-direction: column; gap: var(--space-1); }
+.energy-label { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); }
+.energy-name { color: var(--color-text-muted); font-weight: 500; }
+.energy-val { font-family: var(--font-mono); color: var(--color-text); font-weight: 600; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-faint); }
+
+/* ===== RESPONSIVE / RWD ===== */
+
+/* --- Hamburger button (mobile only) --- */
+.hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  cursor: pointer; border: none; background: none;
+  flex-shrink: 0;
+}
+.hamburger:hover { background: var(--color-surface-offset); color: var(--color-text); }
+
+/* --- Sidebar overlay (mobile) --- */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: oklch(0 0 0 / 0.5);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.open { display: block; }
+
+/* --- Tablet: collapse sidebar to icons --- */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .app-shell { grid-template-columns: 60px 1fr; }
+  .sidebar { width: 60px; overflow: visible; }
+  .sidebar-logo .logo-text,
+  .sidebar-logo .logo-sub,
+  .sidebar-section-label,
+  .nav-item span:not(.nav-badge),
+  .nav-item svg + *,
+  .site-indicator span:not(.site-dot),
+  .sidebar-footer { display: none; }
+  .sidebar-logo { justify-content: center; padding: var(--space-4) var(--space-2); }
+  .nav-item { justify-content: center; padding: var(--space-3); }
+  .nav-item svg { margin: 0; flex-shrink: 0; }
+  .nav-badge { position: absolute; top: 4px; right: 4px; min-width: 14px; padding: 1px 4px; font-size: 9px; }
+  .site-indicator { justify-content: center; }
+  .sidebar-footer { padding: var(--space-2); }
+  .topbar-title { font-size: var(--text-sm); }
+}
+
+/* --- Mobile: slide-over sidebar --- */
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 52px 1fr;
+    grid-template-areas: "topbar" "main";
+  }
+  .sidebar {
+    position: fixed;
+    top: 0; left: -240px;
+    width: 240px;
+    height: 100dvh;
+    z-index: 200;
+    transition: left 0.28s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { left: 0; }
+  .hamburger { display: flex; }
+  .topbar { padding: 0 var(--space-4); gap: var(--space-3); }
+  .topbar-title { font-size: var(--text-sm); }
+  .topbar-clock { display: none; }
+  .main { padding: var(--space-4) var(--space-3); gap: var(--space-4); }
+
+  /* KPI grid: 2 cols on mobile */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+  .kpi-value { font-size: var(--text-lg) !important; }
+
+  /* Content grid: single column */
+  .content-grid { grid-template-columns: 1fr !important; }
+
+  /* Cards: tighter padding */
+  .card-header { padding: var(--space-3) var(--space-4); }
+  .card-body { padding: var(--space-3) var(--space-4); }
+
+  /* Tables: horizontal scroll */
+  .wo-table th, .wo-table td { padding: var(--space-2) var(--space-3); white-space: nowrap; }
+
+  /* Buttons: smaller on mobile */
+  .btn { padding: var(--space-2) var(--space-3); font-size: var(--text-xs); }
+  .card-actions { gap: var(--space-1); }
+
+  /* Alert banner: wrap */
+  .alert-banner { flex-wrap: wrap; font-size: var(--text-xs); }
+  .alert-banner .btn { margin-left: 0 !important; width: 100%; justify-content: center; }
+
+  /* Timer card: compact */
+  .timer-card { gap: var(--space-3); padding: var(--space-3); }
+  .timer-ring-wrap { width: 52px; height: 52px; }
+  .timer-ring { width: 52px; height: 52px; }
+
+  /* Modal: full-screen bottom sheet */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal { max-width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 92dvh; }
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Patrol tabs */
+  .patrol-switcher { padding: var(--space-2) var(--space-3) !important; font-size: 11px !important; }
+
+  /* Emergency level cards */
+  #page-emergency > div:nth-child(2) { grid-template-columns: 1fr !important; }
+}
+
+/* --- Extra small: very narrow screens --- */
+@media (max-width: 380px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .topbar-actions .btn-icon:not(:first-child):not(#theme-toggle) { display: none; }
+}
+
+/* --- Large screens: wider sidebar --- */
+@media (min-width: 1280px) {
+  .app-shell { grid-template-columns: 240px 1fr; }
+}
+
+
+/* ===== PATROL TAB SWITCHER ===== */
+.patrol-switcher.btn-primary { background: var(--color-primary); color: #fff; border: none; }
+/* ===== FLASH BADGE (緊急動畫) ===== */
+@keyframes flash-badge { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.flash { animation: flash-badge 1s ease-in-out infinite; }
+
+/* ===== TOOLTIP ===== */
+[title] { cursor: help; }
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="app-shell">
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M2 12h20M12 2v20M17 7l-5-5-5 5M7 17l5 5 5-5"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">OCC 戰情中心</div>
+      <div class="logo-sub">聯新醫院桃新分院</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-label">主要功能</div>
+    <button class="nav-item active" onclick="switchPage('dashboard')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      戰情總覽
+    </button>
+    <button class="nav-item" onclick="switchPage('workorder')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+      工單管理
+      <span class="nav-badge" id="badge-wo">7</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('emergency')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      緊急應變
+      <span class="nav-badge flash" id="badge-em">2</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('equipment')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      設備台帳
+    </button>
+    <button class="nav-item" onclick="switchPage('energy')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      能源監測
+      <span class="nav-badge warn" id="badge-en">!</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('patrol')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      人力 &amp; 值班
+    </button>
+    <div class="sidebar-section-label">報表管理</div>
+    <button class="nav-item" onclick="switchPage('monthly')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      月報彙整
+    </button>
+    <button class="nav-item" onclick="switchPage('expense')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      費用結算
+    </button>
+  </nav>
+  <div class="site-indicator">
+    <span class="site-dot"></span>
+    <span>復興路195號 / 南海街7號</span>
+  </div>
+  <div class="sidebar-footer">合約期：2026.02 ~ 2027.01</div>
+</aside>
+
+<!-- ===== TOPBAR ===== -->
+<header class="topbar">
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="開啟選單">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="topbar-title" id="page-title">⚡ 戰情總覽</div>
+  <div class="topbar-clock" id="clock">--:--:--</div>
+  <div class="topbar-actions">
+    <button class="btn-icon" onclick="openModal('newWO')" title="新增工單">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </button>
+    <button class="btn-icon" title="通知">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-dot"></span>
+    </button>
+    <button class="btn-icon" id="theme-toggle" data-theme-toggle onclick="toggleTheme()" title="切換主題">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+
+<!-- ===== PAGE: DASHBOARD ===== -->
+<div id="page-dashboard" class="panel active">
+
+  <!-- Alert -->
+  <div class="alert-banner" id="em-alert">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>⚠ 緊急應變中：2件工單待處理。90分鐘到場計時進行中。</span>
+    <button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="switchPage('emergency')">前往應變 →</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span class="kpi-label">待處理工單</span>
+        <div class="kpi-icon" style="background:var(--color-error-highlight); color:var(--color-error)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-open">7</div>
+      <div class="kpi-meta"><span class="down">▲ 2</span> 較昨日</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span class="kpi-label">今日完成</span>
+        <div class="kpi-icon" style="background:var(--color-success-highlight); color:var(--color-success)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" id="kpi-done">12</div>
+      <div class="kpi-meta"><span class="up">▲ 3</span> 較昨日</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span class="kpi-label">緊急應變</span>
+        <div class="kpi-icon" style="background:var(--color-orange-highlight); color:var(--color-orange)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value flash" style="color:var(--color-orange)">2</div>
+      <div class="kpi-meta"><span class="warn">⏱ 計時中</span></div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span class="kpi-label">設備在線率</span>
+        <div class="kpi-icon" style="background:var(--color-teal-highlight); color:var(--color-teal)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" style="color:var(--color-teal)">94.2%</div>
+      <div class="kpi-meta"><span class="up">▲ 0.8%</span> 較上月</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span class="kpi-label">平均到場時間</span>
+        <div class="kpi-icon" style="background:var(--color-purple-highlight); color:var(--color-purple)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+      <div class="kpi-value" style="color:var(--color-purple)">38<span style="font-size:0.7em;font-weight:400">分</span></div>
+      <div class="kpi-meta">目標 &lt; 90分鐘 <span class="up">✓</span></div>
+    </div>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="content-grid">
+    <!-- Left: Work Orders -->
+    <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+
+      <!-- 工單狀態 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            本日工單列表
+          </span>
+          <div class="card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="switchPage('workorder')">全部工單</button>
+            <button class="btn btn-sm btn-primary" onclick="openModal('newWO')">＋ 新增</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="wo-table">
+            <thead>
+              <tr>
+                <th>工單編號</th>
+                <th>設備/位置</th>
+                <th>類型</th>
+                <th>優先級</th>
+                <th>狀態</th>
+                <th>負責人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="wo-tbody">
+              <!-- JS填充 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 設備狀態速覽 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            設備系統狀態
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="equip-grid" id="equip-status">
+            <!-- JS填充 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Sidebar Panel -->
+    <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+
+      <!-- 緊急90分鐘計時器 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" style="color:var(--color-error)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            緊急到場計時
+          </span>
+          <span class="badge badge-error flash">進行中</span>
+        </div>
+        <div class="card-body">
+          <div class="timers-list" id="timers-list"><!-- JS --></div>
+        </div>
+      </div>
+
+      <!-- 緊急修繕SOP -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v3c0 1.1.9 2 2 2h4"/><path d="M9 11V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-5"/><path d="M9 11L5 7"/></svg>
+            緊急修繕SOP
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="sop-flow" id="sop-quick"><!-- JS --></div>
+        </div>
+      </div>
+
+      <!-- 近期動態 -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            近期動態
+          </span>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <div class="activity-list" id="activity-list"><!-- JS --></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: WORKORDER ===== -->
+<div id="page-workorder" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">工單管理</h2>
+    <button class="btn btn-primary" onclick="openModal('newWO')">＋ 新增工單</button>
+  </div>
+  <div class="tabs" style="margin-bottom:var(--space-4)">
+    <button class="tab-btn active" onclick="filterWO('all',this)">全部</button>
+    <button class="tab-btn" onclick="filterWO('open',this)">待處理</button>
+    <button class="tab-btn" onclick="filterWO('inprogress',this)">進行中</button>
+    <button class="tab-btn" onclick="filterWO('done',this)">已完成</button>
+    <button class="tab-btn" onclick="filterWO('project',this)">專案</button>
+  </div>
+  <div class="card">
+    <div style="overflow-x:auto">
+      <table class="wo-table">
+        <thead>
+          <tr>
+            <th>工單編號</th>
+            <th>設備/位置</th>
+            <th>維修分級</th>
+            <th>優先級</th>
+            <th>狀態</th>
+            <th>負責人</th>
+            <th>建立時間</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="wo-all-tbody"><!-- JS --></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: EMERGENCY ===== -->
+<div id="page-emergency" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700;color:var(--color-error)">⚡ 緊急應變中心</h2>
+    <button class="btn btn-danger" onclick="openModal('newEM')">⚡ 建立緊急工單</button>
+  </div>
+
+  <!-- 金額分級說明 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-bottom:var(--space-6)">
+    <div class="card" style="border-color:var(--color-success)">
+      <div class="card-body">
+        <div style="font-size:var(--text-xs);font-weight:700;color:var(--color-success);text-transform:uppercase;margin-bottom:var(--space-2)">第一級</div>
+        <div style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-1)">≤ 5萬元</div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6">先行處置<br>3個工作天內補報<br>同步通知甲方窗口</div>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--color-warning)">
+      <div class="card-body">
+        <div style="font-size:var(--text-xs);font-weight:700;color:var(--color-warning);text-transform:uppercase;margin-bottom:var(--space-2)">第二級</div>
+        <div style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-1)">5萬 ~ 15萬</div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6">電話取得口頭同意<br>24小時內補送書面<br>含時間/對象/內容</div>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--color-error)">
+      <div class="card-body">
+        <div style="font-size:var(--text-xs);font-weight:700;color:var(--color-error);text-transform:uppercase;margin-bottom:var(--space-2)">第三級</div>
+        <div style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-1)">&gt; 15萬元</div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6">依正常採購流程<br>危及病患安全除外<br>先維安措施後報核</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 進行中緊急工單 -->
+  <div class="card" style="margin-bottom:var(--space-4)">
+    <div class="card-header">
+      <span class="card-title" style="color:var(--color-error)">進行中緊急案件</span>
+      <span class="badge badge-error flash">2 件</span>
+    </div>
+    <div class="card-body">
+      <div class="timers-list" id="em-timers-full"><!-- JS --></div>
+    </div>
+  </div>
+
+  <!-- SOP流程 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">附件二：緊急修繕作業標準程序 (SOP)</span>
+    </div>
+    <div class="card-body">
+      <div id="sop-full" class="sop-flow"><!-- JS --></div>
+      <div class="divider"></div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.8">
+        ⚠ 事後補辦（5個工作天內）：①電話/通訊請示紀錄 ②甲方窗口同意截圖 ③廠商報價單 ④處置前後照片<br>
+        ★ C段設備緊急修繕後10個工作天內應啟動專案評估（汰舊換新/系統升級）
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: EQUIPMENT ===== -->
+<div id="page-equipment" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">設備台帳管理</h2>
+    <div style="display:flex;gap:var(--space-2)">
+      <button class="btn btn-secondary btn-sm">匯出清冊</button>
+      <button class="btn btn-primary btn-sm">＋ 新增設備</button>
+    </div>
+  </div>
+  <!-- 年限說明 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);margin-bottom:var(--space-6)">
+    <div class="kpi-card" style="border-color:var(--color-success)">
+      <div class="kpi-label" style="color:var(--color-success)">A段（0～5年）</div>
+      <div style="font-size:var(--text-sm);margin-top:var(--space-2);color:var(--color-text-muted)">以二級維修為主</div>
+    </div>
+    <div class="kpi-card" style="border-color:var(--color-warning)">
+      <div class="kpi-label" style="color:var(--color-warning)">B段（6～10年）</div>
+      <div style="font-size:var(--text-sm);margin-top:var(--space-2);color:var(--color-text-muted)">二級可行，加註老化觀察</div>
+    </div>
+    <div class="kpi-card" style="border-color:var(--color-error)">
+      <div class="kpi-label" style="color:var(--color-error)">C段（11年以上）</div>
+      <div style="font-size:var(--text-sm);margin-top:var(--space-2);color:var(--color-text-muted)">二級僅作安全維持或臨時修復</div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="overflow-x:auto">
+      <table class="wo-table">
+        <thead>
+          <tr><th>設備名稱</th><th>群別</th><th>位置</th><th>使用年限</th><th>年限段</th><th>維修級別</th><th>最近保養</th><th>狀態</th></tr>
+        </thead>
+        <tbody id="equip-tbody"><!-- JS --></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: ENERGY ===== -->
+<div id="page-energy" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">能源監測</h2>
+    <span class="badge badge-warning">異常警示：1項</span>
+  </div>
+  <div class="content-grid">
+    <div>
+      <div class="card" style="margin-bottom:var(--space-4)">
+        <div class="card-header"><span class="card-title">本月用電狀況</span></div>
+        <div class="card-body">
+          <div class="energy-bars" id="energy-bars"><!-- JS --></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title" style="color:var(--color-warning)">異常追蹤紀錄</span></div>
+        <div class="card-body">
+          <div class="activity-list" id="energy-events"><!-- JS --></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">能源管理報告</span></div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);font-weight:600;margin-bottom:var(--space-2)">本月用電（度）</div>
+            <div style="font-family:var(--font-mono);font-size:var(--text-xl);font-weight:700;color:var(--color-primary)">124,580</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)">較上月 <span style="color:var(--color-error)">▲ 3.2%</span></div>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);font-weight:600;margin-bottom:var(--space-2)">節能績效（本月）</div>
+            <div style="font-family:var(--font-mono);font-size:var(--text-xl);font-weight:700;color:var(--color-success)">-2.1%</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)">較基準期下降</div>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);font-weight:600;margin-bottom:var(--space-2)">改善建議</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.8">
+              1. B2空調機組用電異常，建議安排預防性保養<br>
+              2. 南海街館電梯待機耗電偏高，建議調整節能模式<br>
+              3. 夜間照明區段可加裝感應器節省電費
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: PATROL ===== -->
+<div id="page-patrol" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">人力 &amp; 值班管理</h2>
+    <div style="display:flex;gap:var(--space-2)">
+      <button class="btn btn-secondary btn-sm patrol-switcher active-patrol" onclick="switchPatrolTab('staff',this)">物業人力</button>
+      <button class="btn btn-secondary btn-sm patrol-switcher" onclick="switchPatrolTab('security',this)">保全值班</button>
+      <button class="btn btn-secondary btn-sm patrol-switcher" onclick="switchPatrolTab('cleaning',this)">清潔值班</button>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid" style="margin-bottom:var(--space-6)">
+    <div class="kpi-card"><div class="kpi-label">物業人力（今日）</div><div class="kpi-value" style="margin-top:var(--space-2)">5/5</div><div class="kpi-meta"><span class="up">✓ 全員到位</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">保全值班（今日）</div><div class="kpi-value" style="margin-top:var(--space-2)">6</div><div class="kpi-meta">復興路4 + 南海街2</div></div>
+    <div class="kpi-card"><div class="kpi-label">清潔值班（今日）</div><div class="kpi-value" style="margin-top:var(--space-2)">8</div><div class="kpi-meta">復興路5 + 南海街3</div></div>
+    <div class="kpi-card"><div class="kpi-label">異常出勤</div><div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-warning)">1</div><div class="kpi-meta"><span class="warn">清潔人員遲到</span></div></div>
+  </div>
+
+  <!-- TAB: 物業人力 -->
+  <div id="patrol-tab-staff" class="patrol-tab">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 物業人力配置（今日）</span>
+        <span class="badge badge-success">5人全員到位</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="wo-table">
+          <thead><tr><th>職位</th><th>姓名</th><th>班別時段</th><th>服務區域</th><th>今日工單</th><th>狀態</th><th>聯絡</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-info">駐地主管</span></td><td><strong>陳○○</strong></td><td style="font-family:var(--font-mono);font-size:11px">08:00-17:00</td><td>全區</td><td>3</td><td><span class="badge badge-success">在班</span></td><td style="font-family:var(--font-mono);font-size:11px">0912-XXX-001</td></tr>
+            <tr><td><span class="badge badge-neutral">總務人員</span></td><td><strong>林○○</strong></td><td style="font-family:var(--font-mono);font-size:11px">08:00-17:00</td><td>復興路館</td><td>4</td><td><span class="badge badge-success">在班</span></td><td style="font-family:var(--font-mono);font-size:11px">0912-XXX-002</td></tr>
+            <tr><td><span class="badge badge-neutral">總務人員</span></td><td><strong>王○○</strong></td><td style="font-family:var(--font-mono);font-size:11px">08:00-17:00</td><td>南海街館</td><td>2</td><td><span class="badge badge-success">在班</span></td><td style="font-family:var(--font-mono);font-size:11px">0912-XXX-003</td></tr>
+            <tr><td><span class="badge badge-orange">工務人員</span></td><td><strong>張○○</strong></td><td style="font-family:var(--font-mono);font-size:11px">07:00-16:00</td><td>復興路館</td><td>5</td><td><span class="badge badge-success">在班</span></td><td style="font-family:var(--font-mono);font-size:11px">0912-XXX-004</td></tr>
+            <tr><td><span class="badge badge-orange">工務人員</span></td><td><strong>李○○</strong></td><td style="font-family:var(--font-mono);font-size:11px">07:00-16:00</td><td>南海街館</td><td>3</td><td><span class="badge badge-warning">緊急應變</span></td><td style="font-family:var(--font-mono);font-size:11px">0912-XXX-005</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: 保全值班 -->
+  <div id="patrol-tab-security" class="patrol-tab" style="display:none">
+    <div id="sec-live-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:var(--space-4);margin-bottom:var(--space-4)"></div>
+    <div class="card" style="margin-bottom:var(--space-4)">
+      <div class="card-header">
+        <span class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 保全今日班表</span>
+        <div style="display:flex;gap:var(--space-2)">
+          <span class="badge badge-info">日班</span><span class="badge badge-purple">夜班</span><span class="badge badge-teal">大夜班</span>
+          <button class="btn btn-xs btn-secondary" onclick="exportSchedule('security')">匯出</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="wo-table"><thead><tr><th>姓名</th><th>館別</th><th>班別</th><th>時段</th><th>崗位</th><th>簽到時間</th><th>狀態</th></tr></thead><tbody id="sec-tbody"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">本週班表（保全）</span></div>
+      <div style="overflow-x:auto"><table class="wo-table"><thead><tr><th>姓名</th><th>崗位</th><th>一 03/30</th><th>二 03/31</th><th>三 04/01</th><th>四 04/02</th><th>五 04/03</th><th>六 04/04</th><th>日 04/05</th></tr></thead><tbody id="sec-week-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- TAB: 清潔值班 -->
+  <div id="patrol-tab-cleaning" class="patrol-tab" style="display:none">
+    <div id="cln-live-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:var(--space-4);margin-bottom:var(--space-4)"></div>
+    <div class="card" style="margin-bottom:var(--space-4)">
+      <div class="card-header">
+        <span class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg> 清潔今日班表</span>
+        <div style="display:flex;gap:var(--space-2)">
+          <span class="badge badge-info">日班</span><span class="badge badge-purple">夜班</span>
+          <button class="btn btn-xs btn-secondary" onclick="exportSchedule('cleaning')">匯出</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="wo-table"><thead><tr><th>姓名</th><th>館別</th><th>班別</th><th>時段</th><th>負責區域</th><th>簽到時間</th><th>狀態</th></tr></thead><tbody id="cln-tbody"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">本週班表（清潔）</span></div>
+      <div style="overflow-x:auto"><table class="wo-table"><thead><tr><th>姓名</th><th>區域</th><th>一 03/30</th><th>二 03/31</th><th>三 04/01</th><th>四 04/02</th><th>五 04/03</th><th>六 04/04</th><th>日 04/05</th></tr></thead><tbody id="cln-week-tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: MONTHLY ===== -->
+<div id="page-monthly" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">月報彙整</h2>
+    <button class="btn btn-primary btn-sm">產出本月報告</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">月報結構（依合約第六條第五項）</span></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-4)">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4)">
+        <div style="padding:var(--space-4);background:var(--color-surface-2);border-radius:var(--radius-lg);border:1px solid var(--color-border)">
+          <div style="font-weight:600;margin-bottom:var(--space-2)">一、設備現況</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.8">本月處理工單：19件<br>完成率：89.5%<br>二級：14件 / 三級：4件 / 專案：1件</div>
+        </div>
+        <div style="padding:var(--space-4);background:var(--color-surface-2);border-radius:var(--radius-lg);border:1px solid var(--color-border)">
+          <div style="font-weight:600;margin-bottom:var(--space-2)">二、節能績效</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.8">本月節電：-2.1%<br>節電量：2,678度<br>目標達成率：105%</div>
+        </div>
+        <div style="padding:var(--space-4);background:var(--color-surface-2);border-radius:var(--radius-lg);border:1px solid var(--color-border)">
+          <div style="font-weight:600;margin-bottom:var(--space-2)">三、能源管理報告</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.8">用電：124,580度<br>異常事件：1件（B2空調）<br>已通報改善中</div>
+        </div>
+        <div style="padding:var(--space-4);background:var(--color-surface-2);border-radius:var(--radius-lg);border:1px solid var(--color-border)">
+          <div style="font-weight:600;margin-bottom:var(--space-2)">四、改善建議</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.8">已提出3項改善建議<br>待甲方核示：1項<br>執行中：2項</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: EXPENSE ===== -->
+<div id="page-expense" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">費用結算</h2>
+    <span class="badge badge-info">月結週期：次月10日前</span>
+  </div>
+  <div class="kpi-grid" style="margin-bottom:var(--space-6)">
+    <div class="kpi-card"><div class="kpi-label">月服務費</div><div class="kpi-value" style="margin-top:var(--space-2)">$450,000</div><div class="kpi-meta">日常服務費</div></div>
+    <div class="kpi-card"><div class="kpi-label">設備維修管理費</div><div class="kpi-value" style="margin-top:var(--space-2)">$100,000</div><div class="kpi-meta">保養/校驗管理</div></div>
+    <div class="kpi-card"><div class="kpi-label">本月實支費用</div><div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-warning)">$82,400</div><div class="kpi-meta">零件/耗材/委外</div></div>
+    <div class="kpi-card"><div class="kpi-label">履約保證金</div><div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-teal)">$550,000</div><div class="kpi-meta">支票繳交</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">本月費用明細</span></div>
+    <div class="card-body">
+      <table class="wo-table">
+        <thead><tr><th>項目</th><th>類別</th><th>金額（含稅）</th><th>負擔方</th><th>單據</th><th>狀態</th></tr></thead>
+        <tbody>
+          <tr><td>空調濾網更換</td><td><span class="badge badge-neutral">基本耗材</span></td><td style="font-family:var(--font-mono)">$480</td><td><span class="badge badge-orange">乙方</span></td><td>WO-2603-001</td><td><span class="badge badge-success">已核銷</span></td></tr>
+          <tr><td>冷卻水泵軸承</td><td><span class="badge badge-warning">設備零件</span></td><td style="font-family:var(--font-mono)">$35,200</td><td><span class="badge badge-info">甲方</span></td><td>WO-2603-004</td><td><span class="badge badge-warning">待請款</span></td></tr>
+          <tr><td>消防偵煙器（3組）</td><td><span class="badge badge-warning">設備零件</span></td><td style="font-family:var(--font-mono)">$22,800</td><td><span class="badge badge-info">甲方</span></td><td>WO-2603-007</td><td><span class="badge badge-success">已核銷</span></td></tr>
+          <tr><td>電梯機房委外保養</td><td><span class="badge badge-error">三級委外</span></td><td style="font-family:var(--font-mono)">$24,000</td><td><span class="badge badge-info">甲方</span></td><td>WO-2603-012</td><td><span class="badge badge-warning">待請款</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ===== MODAL: 新增工單 ===== -->
+<div class="modal-overlay" id="modal-newWO">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">新增工單</span>
+      <button class="btn-icon" onclick="closeModal('newWO')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">維修分級</label>
+          <select class="form-select" id="wo-level">
+            <option value="2">二級維修（乙方負責）</option>
+            <option value="3">三級維修（委外/另案）</option>
+            <option value="project">專案</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">緊急度</label>
+          <select class="form-select" id="wo-urgency">
+            <option value="normal">一般</option>
+            <option value="urgent">急件</option>
+            <option value="critical">營運不中斷緊急</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">設備名稱 / 故障位置</label>
+        <input class="form-input" type="text" placeholder="例：B2空調主機 / 復興路館三樓" id="wo-equip">
+      </div>
+      <div class="form-group">
+        <label class="form-label">設備群別</label>
+        <select class="form-select" id="wo-group">
+          <option>群1 建築裝修與一般設施</option>
+          <option>群2 一般機電</option>
+          <option>群3 關鍵機電（高風險）</option>
+          <option>群4 醫療儀器設備</option>
+          <option>群5 環管法規類</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">故障描述</label>
+        <textarea class="form-textarea" placeholder="詳述故障現象、發現時間、初步判斷..." id="wo-desc"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">負責人員</label>
+          <select class="form-select" id="wo-person">
+            <option>張○○（工務）</option>
+            <option>李○○（工務）</option>
+            <option>林○○（總務）</option>
+            <option>王○○（總務）</option>
+            <option>陳○○（主管）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">預估費用</label>
+          <input class="form-input" type="text" placeholder="NT$" id="wo-cost">
+        </div>
+      </div>
+      <div id="cost-level-hint" style="padding:var(--space-3);background:var(--color-warning-highlight);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-warning);display:none">
+        ⚠ 預估金額分級提示
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('newWO')">取消</button>
+      <button class="btn btn-primary" onclick="submitWO()">建立工單</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: 緊急工單 ===== -->
+<div class="modal-overlay" id="modal-newEM">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" style="color:var(--color-error)">⚡ 建立緊急應變工單</span>
+      <button class="btn-icon" onclick="closeModal('newEM')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:var(--space-3);background:var(--color-error-highlight);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-error);margin-bottom:var(--space-2)">
+        ⚡ 緊急工單建立後，90分鐘到場計時立即啟動。請確認故障情況後再提交。
+      </div>
+      <div class="form-group">
+        <label class="form-label">緊急類型</label>
+        <select class="form-select">
+          <option>影響病患安全</option>
+          <option>影響院區核心營運</option>
+          <option>設備重大故障</option>
+          <option>消防/逃生系統異常</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">故障位置</label>
+        <input class="form-input" type="text" placeholder="例：ICU空調系統 / 南海街館手術室">
+      </div>
+      <div class="form-group">
+        <label class="form-label">預估處置金額</label>
+        <select class="form-select" id="em-cost-level" onchange="showEMLevel()">
+          <option value="1">第一級：5萬元以下</option>
+          <option value="2">第二級：5萬～15萬元</option>
+          <option value="3">第三級：15萬元以上</option>
+        </select>
+      </div>
+      <div id="em-level-info" style="padding:var(--space-3);background:var(--color-success-highlight);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-success)">
+        ✓ 第一級：可先行處置，3個工作天內補報甲方
+      </div>
+      <div class="form-group">
+        <label class="form-label">狀況說明</label>
+        <textarea class="form-textarea" placeholder="詳述緊急情況..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('newEM')">取消</button>
+      <button class="btn btn-danger" onclick="submitEM()">⚡ 啟動緊急應變</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+let workOrders = [
+  { id:'WO-2604-001', equip:'B2空調主機', loc:'復興路館', level:'2', urgency:'critical', status:'inprogress', person:'張○○', created:'08:32', group:'群3', cost:'' },
+  { id:'WO-2604-002', equip:'消防偵煙器', loc:'南海街館4F', level:'3', urgency:'urgent', status:'open', person:'李○○', created:'09:15', group:'群3', cost:'22800' },
+  { id:'WO-2604-003', equip:'電梯門扇', loc:'復興路館', level:'2', urgency:'normal', status:'open', person:'張○○', created:'09:45', group:'群1', cost:'' },
+  { id:'WO-2604-004', equip:'排水管異常', loc:'南海街館B1', level:'2', urgency:'urgent', status:'inprogress', person:'李○○', created:'10:20', group:'群2', cost:'' },
+  { id:'WO-2604-005', equip:'冷藏櫃溫控', loc:'藥局', level:'3', urgency:'critical', status:'open', person:'陳○○', created:'10:55', group:'群4', cost:'' },
+  { id:'WO-2604-006', equip:'門禁機房', loc:'復興路館', level:'2', urgency:'normal', status:'done', person:'王○○', created:'07:30', group:'群2', cost:'' },
+  { id:'WO-2604-007', equip:'廢棄物稽查', loc:'全院', level:'2', urgency:'normal', status:'done', person:'林○○', created:'08:00', group:'群5', cost:'' },
+];
+
+let equipments = [
+  { name:'空調主機', group:'群3', loc:'B2機房', age:8, seg:'B', level:'二/三級', lastMaint:'2026-03-01', status:'warn' },
+  { name:'消防系統', group:'群3', loc:'全棟', age:5, seg:'A', level:'三級', lastMaint:'2026-03-15', status:'ok' },
+  { name:'冷卻水塔', group:'群3', loc:'屋頂', age:12, seg:'C', level:'三級/專案', lastMaint:'2026-02-10', status:'warn' },
+  { name:'升降梯(1)', group:'群3', loc:'復興路館', age:9, seg:'B', level:'三級', lastMaint:'2026-03-20', status:'ok' },
+  { name:'發電機', group:'群3', loc:'B1機房', age:7, seg:'B', level:'三級', lastMaint:'2026-03-01', status:'ok' },
+  { name:'UPS電源', group:'群3', loc:'機房', age:6, seg:'B', level:'三級', lastMaint:'2026-02-28', status:'ok' },
+  { name:'醫療氣體系統', group:'群3', loc:'全棟', age:9, seg:'B', level:'三級', lastMaint:'2026-03-10', status:'ok' },
+  { name:'冷藏設備', group:'群4', loc:'藥局/手術室', age:4, seg:'A', level:'三級', lastMaint:'2026-03-25', status:'error' },
+  { name:'一般照明', group:'群2', loc:'全棟', age:6, seg:'B', level:'二級', lastMaint:'2026-03-15', status:'ok' },
+  { name:'給排水末端', group:'群2', loc:'全棟', age:9, seg:'B', level:'二級', lastMaint:'2026-03-10', status:'ok' },
+  { name:'天花板/隔間', group:'群1', loc:'全棟', age:9, seg:'B', level:'二級', lastMaint:'2026-03-20', status:'ok' },
+  { name:'廢棄物管理', group:'群5', loc:'全院', age:0, seg:'-', level:'管理/申報', lastMaint:'2026-04-01', status:'ok' },
+];
+
+const emergencyTimers = [
+  { id:'WO-2604-001', title:'B2空調主機緊急故障', loc:'復興路館', start: Date.now()-2580000 },
+  { id:'WO-2604-005', title:'藥局冷藏櫃溫控異常', loc:'藥局', start: Date.now()-1200000 },
+];
+
+const activities = [
+  { color:'var(--color-error)', title:'WO-2604-005 冷藏櫃溫控異常－緊急工單建立', time:'10:55' },
+  { color:'var(--color-success)', title:'WO-2604-006 門禁機房巡檢－已完成', time:'10:30' },
+  { color:'var(--color-warning)', title:'WO-2604-004 排水管異常－已到場處理中', time:'10:25' },
+  { color:'var(--color-primary)', title:'月能源監測報告已同步更新', time:'10:00' },
+  { color:'var(--color-success)', title:'WO-2604-007 廢棄物稽查－完成', time:'09:50' },
+  { color:'var(--color-orange)', title:'WO-2604-002 消防偵煙器－委外廠商詢價中', time:'09:20' },
+];
+
+// ===== UTILS =====
+const levelBadge = (l) => {
+  if(l==='2') return '<span class="badge badge-info">二級</span>';
+  if(l==='3') return '<span class="badge badge-orange">三級</span>';
+  if(l==='project') return '<span class="badge badge-purple">專案</span>';
+  return l;
+};
+const urgBadge = (u) => {
+  if(u==='critical') return '<span class="badge badge-error flash">緊急</span>';
+  if(u==='urgent') return '<span class="badge badge-warning">急件</span>';
+  return '<span class="badge badge-neutral">一般</span>';
+};
+const statusBadge = (s) => {
+  if(s==='open') return '<span class="badge badge-warning">待處理</span>';
+  if(s==='inprogress') return '<span class="badge badge-info">進行中</span>';
+  if(s==='done') return '<span class="badge badge-success">已完成</span>';
+  return s;
+};
+const statusEquip = (s) => {
+  if(s==='ok') return '<span class="badge badge-success">正常</span>';
+  if(s==='warn') return '<span class="badge badge-warning">觀察中</span>';
+  if(s==='error') return '<span class="badge badge-error flash">異常</span>';
+  return s;
+};
+const segBadge = (s) => {
+  if(s==='A') return '<span class="badge badge-success">A段</span>';
+  if(s==='B') return '<span class="badge badge-warning">B段</span>';
+  if(s==='C') return '<span class="badge badge-error">C段</span>';
+  return s;
+};
+
+// ===== RENDER =====
+function renderWOTable(filter, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  let rows = workOrders;
+  if(filter && filter!=='all') rows = rows.filter(w=>w.status===filter);
+  tbody.innerHTML = rows.map(w=>`
+    <tr>
+      <td><span class="wo-id">${w.id}</span></td>
+      <td><div class="wo-title">${w.equip}</div><div class="wo-meta">${w.loc} · ${w.group}</div></td>
+      <td>${levelBadge(w.level)}</td>
+      <td>${urgBadge(w.urgency)}</td>
+      <td>${statusBadge(w.status)}</td>
+      <td style="font-size:var(--text-xs)">${w.person}</td>
+      <td style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)">${w.created}</td>
+      <td>
+        <button class="btn btn-xs btn-secondary" onclick="updateStatus('${w.id}')">更新狀態</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderEquipStatus() {
+  const equips = [
+    { name:'空調系統', icon:'❄', status:'warn', note:'B2主機觀察中' },
+    { name:'消防系統', icon:'🔥', status:'ok', note:'正常運作' },
+    { name:'機電供配', icon:'⚡', status:'ok', note:'正常運作' },
+    { name:'醫療氣體', icon:'💨', status:'ok', note:'壓力正常' },
+    { name:'升降梯', icon:'🛗', status:'ok', note:'正常運作' },
+    { name:'冷藏設備', icon:'🌡', status:'error', note:'藥局溫控異常' },
+  ];
+  document.getElementById('equip-status').innerHTML = equips.map(e=>`
+    <div class="equip-card">
+      <div class="equip-header">
+        <span style="font-size:1.4rem">${e.icon}</span>
+        ${statusEquip(e.status)}
+      </div>
+      <div class="equip-name">${e.name}</div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)">${e.note}</div>
+    </div>
+  `).join('');
+}
+
+function renderEquipTable() {
+  document.getElementById('equip-tbody').innerHTML = equipments.map(e=>`
+    <tr>
+      <td><strong>${e.name}</strong></td>
+      <td><span class="badge badge-neutral">${e.group}</span></td>
+      <td style="font-size:var(--text-xs)">${e.loc}</td>
+      <td style="font-family:var(--font-mono)">${e.age === 0 ? '-' : e.age+'年'}</td>
+      <td>${segBadge(e.seg)}</td>
+      <td style="font-size:var(--text-xs)">${e.level}</td>
+      <td style="font-family:var(--font-mono);font-size:var(--text-xs)">${e.lastMaint}</td>
+      <td>${statusEquip(e.status)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderTimers(targetId) {
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  el.innerHTML = emergencyTimers.map(t=>{
+    const elapsed = Math.floor((Date.now()-t.start)/1000);
+    const remaining = Math.max(0, 5400-elapsed);
+    const mins = Math.floor(remaining/60), secs = remaining%60;
+    const pct = Math.max(0,(remaining/5400)*100);
+    const circ = 2*Math.PI*25;
+    const dash = circ*(pct/100);
+    const color = pct>50?'var(--color-success)':pct>20?'var(--color-warning)':'var(--color-error)';
+    return `
+    <div class="timer-card" style="border-color:${color}">
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" width="64" height="64" viewBox="0 0 64 64">
+          <circle class="timer-ring-bg" cx="32" cy="32" r="25"/>
+          <circle class="timer-ring-fg" cx="32" cy="32" r="25"
+            stroke="${color}"
+            stroke-dasharray="${circ}"
+            stroke-dashoffset="${circ-dash}"/>
+        </svg>
+        <div class="timer-inner" style="color:${color}">${mins}:${String(secs).padStart(2,'0')}</div>
+      </div>
+      <div class="timer-info">
+        <div class="timer-label">90分鐘到場計時 · ${t.id}</div>
+        <div class="timer-title">${t.title}</div>
+        <div class="timer-sub">${t.loc}</div>
+      </div>
+      <button class="btn btn-xs btn-secondary" style="flex-shrink:0">到達確認</button>
+    </div>`;
+  }).join('');
+}
+
+function renderSOP(targetId) {
+  const steps = [
+    { num:'1', title:'發現故障，初步判斷', desc:'記錄故障時間、位置、現象；評估緊急程度與預估金額', col:'var(--color-primary-highlight)', textCol:'var(--color-primary)' },
+    { num:'2', title:'金額分級確認', desc:'≤5萬：先處置後補報 ｜ 5-15萬：電話口頭同意 ｜ >15萬：書面核准', col:'var(--color-warning-highlight)', textCol:'var(--color-warning)' },
+    { num:'3', title:'通報甲方指定窗口', desc:'電話/LINE/Mail通報，取得授權並留存通訊紀錄（含時間、對象、同意內容）', col:'var(--color-orange-highlight)', textCol:'var(--color-orange)' },
+    { num:'4', title:'90分鐘內到場處理', desc:'安排人員到場，執行緊急修繕或採取安全維持措施', col:'var(--color-error-highlight)', textCol:'var(--color-error)' },
+    { num:'5', title:'事後補辦（5個工作天內）', desc:'補辦請購單，檢附：①通訊紀錄 ②窗口同意截圖 ③報價單 ④現場照片', col:'var(--color-success-highlight)', textCol:'var(--color-success)' },
+    { num:'6', title:'C段設備啟動專案評估', desc:'若屬C段(11年以上)設備，修復後10個工作天內提出汰換或升級專案評估', col:'var(--color-purple-highlight)', textCol:'var(--color-purple)' },
+  ];
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  el.innerHTML = steps.map(s=>`
+    <div class="sop-step" onclick="this.style.opacity=this.style.opacity==='0.6'?'1':'0.6'">
+      <div class="sop-step-num" style="background:${s.col};color:${s.textCol}">${s.num}</div>
+      <div class="sop-step-info">
+        <div class="sop-step-title">${s.title}</div>
+        <div class="sop-step-desc">${s.desc}</div>
+      </div>
+      <div class="sop-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderActivity() {
+  document.getElementById('activity-list').innerHTML = activities.map((a,i)=>`
+    <div class="activity-item">
+      <div class="activity-dot-wrap">
+        <div class="activity-dot" style="background:${a.color}"></div>
+        <div class="activity-line"></div>
+      </div>
+      <div class="activity-content">
+        <div class="activity-title">${a.title}</div>
+        <div class="activity-time">今日 ${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderEnergy() {
+  const items = [
+    { name:'空調系統', val:72400, max:80000, color:'var(--color-primary)', pct:90.5 },
+    { name:'照明系統', val:18200, max:20000, color:'var(--color-success)', pct:91 },
+    { name:'醫療設備', val:22800, max:25000, color:'var(--color-teal)', pct:91.2 },
+    { name:'電梯系統', val:6100, max:5000, color:'var(--color-warning)', pct:122, warn:true },
+    { name:'其他設備', val:5080, max:8000, color:'var(--color-purple)', pct:63.5 },
+  ];
+  document.getElementById('energy-bars').innerHTML = items.map(e=>`
+    <div class="energy-row">
+      <div class="energy-label">
+        <span class="energy-name">${e.name} ${e.warn?'⚠':''}</span>
+        <span class="energy-val" style="color:${e.warn?'var(--color-warning)':'var(--color-text)'}">${e.val.toLocaleString()} 度（${e.pct.toFixed(1)}%）</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${Math.min(e.pct,100)}%;background:${e.warn?'var(--color-warning)':e.color}"></div>
+      </div>
+    </div>
+  `).join('');
+
+  const events = [
+    { color:'var(--color-warning)', title:'電梯系統本月用電超標22%，建議節能模式調整', time:'今日 09:00' },
+    { color:'var(--color-primary)', title:'空調系統效能分析報告已更新', time:'2026-04-02' },
+  ];
+  document.getElementById('energy-events').innerHTML = events.map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot-wrap">
+        <div class="activity-dot" style="background:${a.color}"></div>
+        <div class="activity-line"></div>
+      </div>
+      <div class="activity-content">
+        <div class="activity-title">${a.title}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== CLOCK =====
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===== TIMERS AUTO REFRESH =====
+setInterval(()=>{
+  renderTimers('timers-list');
+  renderTimers('em-timers-full');
+}, 1000);
+
+// ===== NAVIGATION =====
+const pageTitles = {
+  dashboard:'⚡ 戰情總覽',workorder:'📋 工單管理',emergency:'🚨 緊急應變中心',
+  equipment:'🔧 設備台帳',energy:'📊 能源監測',patrol:'👥 人力 & 值班管理',
+  monthly:'📅 月報彙整',expense:'💰 費用結算'
+};
+function switchPage(page) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+page+"'")) n.classList.add('active');
+  });
+  document.getElementById('page-title').textContent = pageTitles[page]||page;
+  // lazy render
+  if(page==='workorder') renderWOTable('all','wo-all-tbody');
+  if(page==='equipment') renderEquipTable();
+  if(page==='energy') renderEnergy();
+  if(page==='emergency') { renderTimers('em-timers-full'); renderSOP('sop-full'); }
+}
+
+// ===== MODAL =====
+function openModal(id) { document.getElementById('modal-'+id).classList.add('open'); }
+function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open');});
+});
+
+// ===== WO FILTER =====
+function filterWO(filter, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWOTable(filter==='all'?null:filter,'wo-all-tbody');
+}
+
+// ===== SUBMIT WO =====
+let woCounter = 8;
+function submitWO() {
+  const equip = document.getElementById('wo-equip').value||'新設備';
+  const level = document.getElementById('wo-level').value;
+  const urgency = document.getElementById('wo-urgency').value;
+  const person = document.getElementById('wo-person').value;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  workOrders.unshift({
+    id:`WO-2604-${String(woCounter++).padStart(3,'0')}`,
+    equip, level, urgency, status: urgency==='critical'?'inprogress':'open',
+    person: person.substring(0,3), created: time, group:'群2', loc:'待確認', cost:''
+  });
+  document.getElementById('kpi-open').textContent = workOrders.filter(w=>w.status!=='done').length;
+  renderWOTable(null,'wo-tbody');
+  renderWOTable(null,'wo-all-tbody');
+  closeModal('newWO');
+  document.getElementById('wo-equip').value='';
+}
+
+function submitEM() {
+  submitWO();
+  closeModal('newEM');
+  document.getElementById('badge-em').textContent = parseInt(document.getElementById('badge-em').textContent)+1;
+}
+
+function updateStatus(id) {
+  const wo = workOrders.find(w=>w.id===id);
+  if(!wo) return;
+  const seq = {open:'inprogress',inprogress:'done',done:'open'};
+  wo.status = seq[wo.status]||'open';
+  renderWOTable(null,'wo-tbody');
+  renderWOTable(null,'wo-all-tbody');
+  document.getElementById('kpi-open').textContent = workOrders.filter(w=>w.status!=='done').length;
+  document.getElementById('kpi-done').textContent = workOrders.filter(w=>w.status==='done').length;
+}
+
+// ===== EMERGENCY LEVEL =====
+function showEMLevel() {
+  const v = document.getElementById('em-cost-level').value;
+  const info = document.getElementById('em-level-info');
+  const msgs = {
+    '1':'✓ 第一級（≤5萬）：可先行處置，3個工作天內補報甲方',
+    '2':'⚠ 第二級（5-15萬）：需電話取得甲方口頭同意，24小時內補送書面紀錄',
+    '3':'🚨 第三級（>15萬）：須依正常採購流程提報核准；如危及病患安全，先安全維持後補報'
+  };
+  const colors = {'1':'var(--color-success-highlight)','2':'var(--color-warning-highlight)','3':'var(--color-error-highlight)'};
+  const textCols = {'1':'var(--color-success)','2':'var(--color-warning)','3':'var(--color-error)'};
+  info.style.background = colors[v]; info.style.color = textCols[v]; info.textContent = msgs[v];
+}
+
+// ===== THEME TOGGLE =====
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current==='dark'?'light':'dark');
+}
+
+// ===== SECURITY & CLEANING DATA =====
+const SHIFT_BADGE = {
+  '日班': '<span class="badge badge-info">日班</span>',
+  '夜班': '<span class="badge badge-purple">夜班</span>',
+  '大夜班': '<span class="badge badge-teal">大夜班</span>',
+  '假日班': '<span class="badge badge-warning">假日班</span>',
+  '休': '<span class="badge badge-neutral">休</span>',
+};
+const STATUS_MAP = {
+  'ok': '<span class="badge badge-success">正常在班</span>',
+  'late': '<span class="badge badge-warning">遲到</span>',
+  'absent': '<span class="badge badge-error">缺勤</span>',
+  'leave': '<span class="badge badge-neutral">請假</span>',
+  'standby': '<span class="badge badge-teal">待命</span>',
+};
+
+const securityStaff = [
+  { name:'黃○○', site:'復興路館', shift:'日班', time:'07:00-15:00', post:'大門警衛', signIn:'06:58', status:'ok' },
+  { name:'劉○○', site:'復興路館', shift:'日班', time:'07:00-15:00', post:'急診入口', signIn:'07:02', status:'ok' },
+  { name:'蔡○○', site:'復興路館', shift:'夜班', time:'15:00-23:00', post:'大門警衛', signIn:'14:55', status:'ok' },
+  { name:'鄭○○', site:'復興路館', shift:'大夜班', time:'23:00-07:00', post:'全棟巡邏', signIn:'22:58', status:'ok' },
+  { name:'吳○○', site:'南海街館', shift:'日班', time:'07:00-15:00', post:'院區入口', signIn:'07:05', status:'ok' },
+  { name:'許○○', site:'南海街館', shift:'夜班', time:'15:00-23:00', post:'院區入口', signIn:'15:20', status:'late' },
+];
+
+const securityWeek = [
+  { name:'黃○○', post:'復興路大門', days:['日班','日班','日班','日班','日班','休','休'] },
+  { name:'劉○○', post:'復興路急診', days:['日班','日班','日班','休','日班','日班','休'] },
+  { name:'蔡○○', post:'復興路大門', days:['夜班','夜班','夜班','夜班','夜班','休','休'] },
+  { name:'鄭○○', post:'復興路全棟', days:['大夜班','大夜班','休','大夜班','大夜班','大夜班','休'] },
+  { name:'吳○○', post:'南海街入口', days:['日班','日班','日班','日班','日班','假日班','休'] },
+  { name:'許○○', post:'南海街入口', days:['夜班','夜班','休','夜班','夜班','假日班','夜班'] },
+];
+
+const cleaningStaff = [
+  { name:'方○○', site:'復興路館', shift:'日班', time:'06:00-14:00', area:'門診一樓', signIn:'06:02', status:'ok' },
+  { name:'曾○○', site:'復興路館', shift:'日班', time:'06:00-14:00', area:'門診二樓', signIn:'06:05', status:'ok' },
+  { name:'游○○', site:'復興路館', shift:'日班', time:'06:00-14:00', area:'住院病房', signIn:'06:15', status:'late' },
+  { name:'謝○○', site:'復興路館', shift:'日班', time:'06:00-14:00', area:'外科病房', signIn:'06:01', status:'ok' },
+  { name:'鍾○○', site:'復興路館', shift:'夜班', time:'14:00-22:00', area:'全棟走廊', signIn:'13:58', status:'ok' },
+  { name:'盧○○', site:'南海街館', shift:'日班', time:'06:00-14:00', area:'門診/急診', signIn:'06:03', status:'ok' },
+  { name:'龔○○', site:'南海街館', shift:'日班', time:'06:00-14:00', area:'住院樓層', signIn:'06:00', status:'ok' },
+  { name:'柯○○', site:'南海街館', shift:'夜班', time:'14:00-22:00', area:'全棟清潔', signIn:'14:02', status:'ok' },
+];
+
+const cleaningWeek = [
+  { name:'方○○', area:'復興路門診1F', days:['日班','日班','日班','日班','日班','休','休'] },
+  { name:'曾○○', area:'復興路門診2F', days:['日班','日班','休','日班','日班','日班','休'] },
+  { name:'游○○', area:'復興路住院', days:['日班','日班','日班','日班','日班','休','休'] },
+  { name:'謝○○', area:'復興路外科', days:['休','日班','日班','日班','日班','日班','休'] },
+  { name:'鍾○○', area:'復興路走廊', days:['夜班','夜班','夜班','夜班','夜班','休','休'] },
+  { name:'盧○○', area:'南海街門急診', days:['日班','日班','日班','日班','日班','假日班','休'] },
+  { name:'龔○○', area:'南海街住院', days:['日班','休','日班','日班','日班','日班','假日班'] },
+  { name:'柯○○', area:'南海街全棟', days:['夜班','夜班','夜班','休','夜班','夜班','夜班'] },
+];
+
+function renderLiveCards(data, targetId) {
+  const statusColor = { ok:'var(--color-success)', late:'var(--color-warning)', absent:'var(--color-error)', leave:'var(--color-text-faint)', standby:'var(--color-teal)' };
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  el.innerHTML = data.map(p => `
+    <div class="kpi-card" style="border-top:3px solid ${statusColor[p.status]||'var(--color-border)'}">
+      <div class="kpi-header">
+        <span style="font-weight:700">${p.name}</span>
+        ${STATUS_MAP[p.status]||''}
+      </div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);line-height:1.7">
+        ${p.site} · ${p.post||p.area}<br>
+        ${SHIFT_BADGE[p.shift]||p.shift} <span style="font-family:var(--font-mono)">${p.time}</span><br>
+        簽到：<span style="font-family:var(--font-mono);color:${p.status==='late'?'var(--color-warning)':'var(--color-text)'}">${p.signIn}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDayTable(data, tbodyId) {
+  const el = document.getElementById(tbodyId);
+  if(!el) return;
+  el.innerHTML = data.map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td style="font-size:var(--text-xs)">${p.site}</td>
+      <td>${SHIFT_BADGE[p.shift]||p.shift}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${p.time}</td>
+      <td style="font-size:var(--text-xs)">${p.post||p.area}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:${p.status==='late'?'var(--color-warning)':'var(--color-text)'}">${p.signIn}</td>
+      <td>${STATUS_MAP[p.status]||''}</td>
+    </tr>
+  `).join('');
+}
+
+const TODAY_IDX = 4; // 週五 = index 4
+function renderWeekTable(data, tbodyId) {
+  const el = document.getElementById(tbodyId);
+  if(!el) return;
+  el.innerHTML = data.map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td style="font-size:var(--text-xs)">${p.post||p.area}</td>
+      ${p.days.map((d,i) => `<td style="${i===TODAY_IDX?'background:var(--color-primary-highlight);font-weight:600':''}">${SHIFT_BADGE[d]||d}</td>`).join('')}
+    </tr>
+  `).join('');
+}
+
+function switchPatrolTab(tab, btn) {
+  document.querySelectorAll('.patrol-tab').forEach(t => t.style.display='none');
+  document.getElementById('patrol-tab-'+tab).style.display='block';
+  document.querySelectorAll('.patrol-switcher').forEach(b => {
+    b.classList.remove('btn-primary');
+    b.classList.add('btn-secondary');
+  });
+  btn.classList.remove('btn-secondary');
+  btn.classList.add('btn-primary');
+  // lazy render
+  if(tab==='security') {
+    renderLiveCards(securityStaff,'sec-live-cards');
+    renderDayTable(securityStaff,'sec-tbody');
+    renderWeekTable(securityWeek,'sec-week-tbody');
+  }
+  if(tab==='cleaning') {
+    renderLiveCards(cleaningStaff,'cln-live-cards');
+    renderDayTable(cleaningStaff,'cln-tbody');
+    renderWeekTable(cleaningWeek,'cln-week-tbody');
+  }
+}
+
+function exportSchedule(type) {
+  const data = type==='security' ? securityWeek : cleaningWeek;
+  const days = ['週一 03/30','週二 03/31','週三 04/01','週四 04/02','週五 04/03','週六 04/04','週日 04/05'];
+  let csv = '姓名,崗位/區域,' + days.join(',') + '\n';
+  data.forEach(p => { csv += `"${p.name}","${p.post||p.area}",` + p.days.join(',') + '\n'; });
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`${type==='security'?'保全':'清潔'}_週班表.csv`; a.click();
+}
+
+// ===== SIDEBAR TOGGLE (MOBILE) =====
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+// Close sidebar on nav-item click (mobile)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(window.innerWidth <= 768) {
+        document.querySelector('.sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+});
+
+// ===== INIT =====
+renderWOTable(null,'wo-tbody');
+renderEquipStatus();
+renderTimers('timers-list');
+renderSOP('sop-quick');
+renderActivity();
+lucide.createIcons();
+</script>
+</body>
+</html>
