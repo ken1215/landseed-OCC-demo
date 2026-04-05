@@ -617,6 +617,12 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
 }
 
 
+/* ===== CCTV BLINK ===== */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ===== VEHICLE TAB SWITCHER ===== */
+.vehicle-switcher.btn-primary { background: var(--color-primary); color: #fff; border: none; }
+
 /* ===== PATROL TAB SWITCHER ===== */
 .patrol-switcher.btn-primary { background: var(--color-primary); color: #fff; border: none; }
 /* ===== FLASH BADGE (緊急動畫) ===== */
@@ -671,6 +677,11 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       人力 &amp; 值班
     </button>
+
+<button class="nav-item" onclick="switchPage('vehicle')">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="7" rx="2" ry="2"/><path d="M5 11V9a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><circle cx="7" cy="19" r="2"/><circle cx="17" cy="19" r="2"/></svg>
+  車輛調度
+</button>
 
 <button class="nav-item" onclick="switchPage('cctv')">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -856,13 +867,14 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
         </div>
       </div>
 
-      <!-- 緊急修繕SOP -->
+      <!-- CCTV 資訊 -->
       <div class="card">
         <div class="card-header">
           <span class="card-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v3c0 1.1.9 2 2 2h4"/><path d="M9 11V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-5"/><path d="M9 11L5 7"/></svg>
-            緊急修繕SOP
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            CCTV 資訊
           </span>
+          <button class="btn btn-xs btn-secondary" onclick="switchPage('cctv')">前往監控 →</button>
         </div>
         <div class="card-body">
           <div class="sop-flow" id="sop-quick"><!-- JS --></div>
@@ -1147,6 +1159,62 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
 </div>
 
 
+<!-- ===== PAGE: VEHICLE ===== -->
+<div id="page-vehicle" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-4)">
+    <h2 style="font-size:var(--text-lg);font-weight:700">車輛調度中心</h2>
+    <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm vehicle-switcher" onclick="switchVehicleTab('ambulance',this)">救護車出勤</button>
+      <button class="btn btn-secondary btn-sm vehicle-switcher" onclick="switchVehicleTab('official',this)">公務車派車</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid" style="margin-bottom:var(--space-6)">
+    <div class="kpi-card"><div class="kpi-label">救護車任務（今日）</div><div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-amb-today">6</div><div class="kpi-meta">進行中 <span class="warn" id="kpi-amb-active">2</span> 件</div></div>
+    <div class="kpi-card"><div class="kpi-label">公務車派車（今日）</div><div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-car-today">8</div><div class="kpi-meta">出車中 <span class="up" id="kpi-car-active">3</span> 台</div></div>
+    <div class="kpi-card"><div class="kpi-label">可用救護車</div><div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-amb-free">1 / 2</div><div class="kpi-meta">院內固定路線</div></div>
+    <div class="kpi-card"><div class="kpi-label">可用公務車</div><div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-car-free">3 / 5</div><div class="kpi-meta">排除維修與預約</div></div>
+  </div>
+
+  <div id="vehicle-tab-ambulance" class="vehicle-tab">
+    <div class="card" style="margin-bottom:var(--space-4)">
+      <div class="card-header">
+        <span class="card-title">救護車出勤任務（院內 / 院區間）</span>
+        <button class="btn btn-sm btn-primary" onclick="openModal('newAmb')">＋ 新增任務</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="wo-table">
+          <thead><tr><th>任務編號</th><th>任務類別</th><th>路線</th><th>時段</th><th>駕駛</th><th>申請單位</th><th>狀態</th></tr></thead>
+          <tbody id="amb-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">進行中任務</span></div>
+      <div class="card-body"><div class="timers-list" id="amb-live"></div></div>
+    </div>
+  </div>
+
+  <div id="vehicle-tab-official" class="vehicle-tab" style="display:none">
+    <div class="card" style="margin-bottom:var(--space-4)">
+      <div class="card-header">
+        <span class="card-title">公務車今日派車</span>
+        <button class="btn btn-sm btn-primary" onclick="openModal('newCar')">＋ 新增派車</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="wo-table">
+          <thead><tr><th>派車單號</th><th>車牌</th><th>用車時間</th><th>出發地 → 目的地</th><th>申請單位/人</th><th>人數</th><th>狀態</th></tr></thead>
+          <tbody id="car-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">公務車即時狀態</span></div>
+      <div class="card-body"><div class="equip-grid" id="car-live"></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== PAGE: CCTV ===== -->
 <div id="page-cctv" class="panel">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
@@ -1157,32 +1225,12 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
       <button class="btn btn-primary btn-sm" onclick="openModal('cctvEvent')">記錄事件</button>
     </div>
   </div>
-
-  <!-- KPI -->
   <div class="kpi-grid" style="margin-bottom:var(--space-6)">
-    <div class="kpi-card">
-      <div class="kpi-label">攝影機總數</div>
-      <div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-cctv-total">24</div>
-      <div class="kpi-meta">復興路16台 + 南海街8台</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">正常運作</div>
-      <div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-success)" id="kpi-cctv-ok">22</div>
-      <div class="kpi-meta"><span class="up">✓ 91.7%</span></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">異常 / 離線</div>
-      <div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-warning)" id="kpi-cctv-warn">2</div>
-      <div class="kpi-meta"><span class="warn">需處理</span></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">本週事件記錄</div>
-      <div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-cctv-events">5</div>
-      <div class="kpi-meta">含異常入侵、設備故障</div>
-    </div>
+    <div class="kpi-card"><div class="kpi-label">攝影機總數</div><div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-cctv-total">24</div><div class="kpi-meta">復興路16台 + 南海街8台</div></div>
+    <div class="kpi-card"><div class="kpi-label">正常運作</div><div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-success)" id="kpi-cctv-ok">22</div><div class="kpi-meta"><span class="up">✓ 91.7%</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">異常 / 離線</div><div class="kpi-value" style="margin-top:var(--space-2);color:var(--color-warning)" id="kpi-cctv-warn">2</div><div class="kpi-meta"><span class="warn">需處理</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">本週事件記錄</div><div class="kpi-value" style="margin-top:var(--space-2)" id="kpi-cctv-events">5</div><div class="kpi-meta">含異常入侵、設備故障</div></div>
   </div>
-
-  <!-- Grid View -->
   <div id="cctv-grid-view">
     <div class="card" style="margin-bottom:var(--space-4)">
       <div class="card-header">
@@ -1194,14 +1242,10 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
         </div>
       </div>
       <div class="card-body">
-        <div id="cctv-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:var(--space-3)">
-          <!-- JS render -->
-        </div>
+        <div id="cctv-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:var(--space-3)"></div>
       </div>
     </div>
   </div>
-
-  <!-- List View (hidden by default) -->
   <div id="cctv-list-view" style="display:none">
     <div class="card" style="margin-bottom:var(--space-4)">
       <div class="card-header"><span class="card-title">攝影機列表</span></div>
@@ -1213,8 +1257,6 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
       </div>
     </div>
   </div>
-
-  <!-- Events Log -->
   <div class="card">
     <div class="card-header"><span class="card-title">近期事件記錄</span></div>
     <div style="overflow-x:auto">
@@ -1411,6 +1453,70 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
 </div>
 
 
+<!-- ===== MODAL: 新增救護車任務 ===== -->
+<div class="modal-overlay" id="modal-newAmb">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">新增救護車任務（院內 / 院區間）</span>
+      <button class="btn-icon" onclick="closeModal('newAmb')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:var(--space-3);background:var(--color-primary-highlight);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2)">依合約約定，本任務僅限院內或院區間固定路線，不含院外緊急救護。</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">任務類別</label><select class="form-select" id="amb-type"><option>病患轉運</option><option>醫療物資運送</option><option>檢體送達</option><option>人員接送</option></select></div>
+        <div class="form-group"><label class="form-label">緊急程度</label><select class="form-select" id="amb-priority"><option value="normal">一般</option><option value="urgent">優先</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">起點</label><select class="form-select" id="amb-from"><option>復興路館 門診區</option><option>復興路館 急診區</option><option>南海街館 病房區</option></select></div>
+        <div class="form-group"><label class="form-label">終點</label><select class="form-select" id="amb-to"><option>南海街館 病房區</option><option>復興路館 門診區</option><option>復興路館 急診區</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">預定出發時間</label><input class="form-input" type="time" id="amb-start"></div>
+        <div class="form-group"><label class="form-label">預估任務時長（分鐘）</label><input class="form-input" type="number" id="amb-duration" placeholder="例：20"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">申請單位</label><input class="form-input" type="text" id="amb-unit" placeholder="例：內科病房"></div>
+        <div class="form-group"><label class="form-label">申請人 / 分機</label><input class="form-input" type="text" id="amb-contact" placeholder="例：王○○ / #1234"></div>
+      </div>
+      <div class="form-group"><label class="form-label">指派駕駛</label><select class="form-select" id="amb-driver"><option>張○○（工務）</option><option>李○○（工務）</option><option>陳○○（主管）</option></select></div>
+      <div class="form-group"><label class="form-label">備註</label><textarea class="form-textarea" id="amb-note" placeholder="例：需輪椅、陪同家屬等"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('newAmb')">取消</button><button class="btn btn-primary" onclick="submitAmb()">建立任務</button></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: 新增公務車派車 ===== -->
+<div class="modal-overlay" id="modal-newCar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">新增公務車派車申請</span>
+      <button class="btn-icon" onclick="closeModal('newCar')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">用車日期</label><input class="form-input" type="date" id="car-date"></div>
+        <div class="form-group"><label class="form-label">時間（起訖）</label><input class="form-input" type="text" id="car-time" placeholder="例：09:00–11:00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">出發地</label><input class="form-input" type="text" id="car-from" placeholder="例：復興路館"></div>
+        <div class="form-group"><label class="form-label">目的地</label><input class="form-input" type="text" id="car-to" placeholder="例：桃園市政府"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">申請單位</label><input class="form-input" type="text" id="car-unit" placeholder="例：資訊室"></div>
+        <div class="form-group"><label class="form-label">申請人 / 分機</label><input class="form-input" type="text" id="car-contact" placeholder="例：林○○ / #3456"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">乘車人數</label><input class="form-input" type="number" id="car-pax" min="1" placeholder="例：3"></div>
+        <div class="form-group"><label class="form-label">車輛來源</label><select class="form-select" id="car-source"><option value="owner">甲方自有車輛</option><option value="vendor">乙方提供車輛（另行約定）</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">優先級</label><select class="form-select" id="car-priority"><option value="normal">一般</option><option value="high">優先</option></select></div>
+      <div class="form-group"><label class="form-label">用車事由</label><textarea class="form-textarea" id="car-reason" placeholder="例：外出會議 / 教育訓練 / 送件"></textarea></div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px">使用乙方提供車輛者，實際收費標準與計價方式以雙方另行書面約定為準。</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('newCar')">取消</button><button class="btn btn-primary" onclick="submitCar()">送出派車申請</button></div>
+  </div>
+</div>
+
 <!-- ===== MODAL: 記錄 CCTV 事件 ===== -->
 <div class="modal-overlay" id="modal-cctvEvent">
   <div class="modal">
@@ -1423,41 +1529,15 @@ a, button, [role="button"] { transition: color var(--transition-interactive), ba
       </button>
     </div>
     <div class="modal-body">
+      <div style="padding:var(--space-3);background:var(--color-primary-highlight);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2)">依合約約定，本系統協助院區安全管理與異常事件記錄。</div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">攝影機編號</label>
-          <select class="form-select" id="cctv-event-cam">
-            <option>CAM-F01 大門入口</option>
-            <option>CAM-F02 急診區</option>
-            <option>CAM-F03 門診大廳</option>
-            <option>CAM-S01 南海街入口</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">事件類型</label>
-          <select class="form-select" id="cctv-event-type">
-            <option>設備故障</option>
-            <option>畫面異常</option>
-            <option>疑似入侵</option>
-            <option>火災警報</option>
-            <option>人員跌倒</option>
-            <option>其他</option>
-          </select>
-        </div>
+        <div class="form-group"><label class="form-label">攝影機編號</label><select class="form-select" id="cctv-event-cam"><option>CAM-F01 大門入口</option><option>CAM-F02 急診區</option><option>CAM-F03 門診大廳</option><option>CAM-S01 南海街入口</option></select></div>
+        <div class="form-group"><label class="form-label">事件類型</label><select class="form-select" id="cctv-event-type"><option>設備故障</option><option>畫面異常</option><option>疑似入侵</option><option>火災警報</option><option>人員跌倒</option><option>其他</option></select></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">事件說明</label>
-        <textarea class="form-textarea" id="cctv-event-desc" placeholder="請描述事件詳情..."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">通報人員</label>
-        <input class="form-input" type="text" id="cctv-event-reporter" placeholder="例：保全 黃○○">
-      </div>
+      <div class="form-group"><label class="form-label">事件說明</label><textarea class="form-textarea" id="cctv-event-desc" placeholder="請描述事件詳情..."></textarea></div>
+      <div class="form-group"><label class="form-label">通報人員</label><input class="form-input" type="text" id="cctv-event-reporter" placeholder="例：保全 黃○○"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('cctvEvent')">取消</button>
-      <button class="btn btn-primary" onclick="submitCCTVEvent()">送出記錄</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('cctvEvent')">取消</button><button class="btn btn-primary" onclick="submitCCTVEvent()">送出記錄</button></div>
   </div>
 </div>
 
@@ -1624,22 +1704,34 @@ function renderTimers(targetId) {
 }
 
 function renderSOP(targetId) {
-  const steps = [
-    { num:'1', title:'發現故障，初步判斷', desc:'記錄故障時間、位置、現象；評估緊急程度與預估金額', col:'var(--color-primary-highlight)', textCol:'var(--color-primary)' },
-    { num:'2', title:'金額分級確認', desc:'≤5萬：先處置後補報 ｜ 5-15萬：電話口頭同意 ｜ >15萬：書面核准', col:'var(--color-warning-highlight)', textCol:'var(--color-warning)' },
-    { num:'3', title:'通報甲方指定窗口', desc:'電話/LINE/Mail通報，取得授權並留存通訊紀錄（含時間、對象、同意內容）', col:'var(--color-orange-highlight)', textCol:'var(--color-orange)' },
-    { num:'4', title:'90分鐘內到場處理', desc:'安排人員到場，執行緊急修繕或採取安全維持措施', col:'var(--color-error-highlight)', textCol:'var(--color-error)' },
-    { num:'5', title:'事後補辦（5個工作天內）', desc:'補辦請購單，檢附：①通訊紀錄 ②窗口同意截圖 ③報價單 ④現場照片', col:'var(--color-success-highlight)', textCol:'var(--color-success)' },
-    { num:'6', title:'C段設備啟動專案評估', desc:'若屬C段(11年以上)設備，修復後10個工作天內提出汰換或升級專案評估', col:'var(--color-purple-highlight)', textCol:'var(--color-purple)' },
+  // CCTV 即時資訊
+  const ok = cctvCameras.filter(c=>c.status==='ok').length;
+  const offline = cctvCameras.filter(c=>c.status==='offline').length;
+  const warning = cctvCameras.filter(c=>c.status==='warning').length;
+  const total = cctvCameras.length;
+  const fxh = cctvCameras.filter(c=>c.site==='復興路館').length;
+  const nhj = cctvCameras.filter(c=>c.site==='南海街館').length;
+  const fxhOk = cctvCameras.filter(c=>c.site==='復興路館'&&c.status==='ok').length;
+  const nhjOk = cctvCameras.filter(c=>c.site==='南海街館'&&c.status==='ok').length;
+  const pendingEvents = cctvEvents.filter(e=>e.status==='待處理').length;
+  const processingEvents = cctvEvents.filter(e=>e.status==='處理中').length;
+
+  const items = [
+    { icon:'📹', title:`攝影機總數`, value:`${total} 台`, sub:`復興路館 ${fxh} 台 ／ 南海街館 ${nhj} 台`, col:'var(--color-primary-highlight)', textCol:'var(--color-primary)' },
+    { icon:'✅', title:`正常運作`, value:`${ok} 台`, sub:`${((ok/total)*100).toFixed(1)}% 可用率`, col:'var(--color-success-highlight)', textCol:'var(--color-success)' },
+    { icon:'⚠️', title:`異常 / 離線`, value:`${warning+offline} 台`, sub:`異常 ${warning} 台 ・ 離線 ${offline} 台`, col: (warning+offline > 0) ? 'var(--color-warning-highlight)' : 'var(--color-success-highlight)', textCol:(warning+offline > 0) ? 'var(--color-warning)' : 'var(--color-success)' },
+    { icon:'🏥', title:`復興路館`, value:`${fxhOk}/${fxh} 台`, sub:`正常 ${fxhOk} ／ 異常 ${fxh-fxhOk}`, col:'var(--color-primary-highlight)', textCol:'var(--color-primary)' },
+    { icon:'🏥', title:`南海街館`, value:`${nhjOk}/${nhj} 台`, sub:`正常 ${nhjOk} ／ 異常 ${nhj-nhjOk}`, col:'var(--color-primary-highlight)', textCol:'var(--color-primary)' },
+    { icon:'🚨', title:`待處理事件`, value:`${pendingEvents} 件`, sub:`處理中 ${processingEvents} 件`, col: pendingEvents > 0 ? 'var(--color-error-highlight)' : 'var(--color-success-highlight)', textCol: pendingEvents > 0 ? 'var(--color-error)' : 'var(--color-success)' },
   ];
   const el = document.getElementById(targetId);
   if(!el) return;
-  el.innerHTML = steps.map(s=>`
-    <div class="sop-step" onclick="this.style.opacity=this.style.opacity==='0.6'?'1':'0.6'">
-      <div class="sop-step-num" style="background:${s.col};color:${s.textCol}">${s.num}</div>
+  el.innerHTML = items.map(s=>`
+    <div class="sop-step" onclick="switchPage('cctv')" style="cursor:pointer">
+      <div class="sop-step-num" style="background:${s.col};color:${s.textCol};font-size:16px">${s.icon}</div>
       <div class="sop-step-info">
-        <div class="sop-step-title">${s.title}</div>
-        <div class="sop-step-desc">${s.desc}</div>
+        <div class="sop-step-title">${s.title}：<span style="color:${s.textCol};font-weight:700">${s.value}</span></div>
+        <div class="sop-step-desc">${s.sub}</div>
       </div>
       <div class="sop-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1722,7 +1814,7 @@ setInterval(()=>{
 const pageTitles = {
   dashboard:'⚡ 戰情總覽',workorder:'📋 工單管理',emergency:'🚨 緊急應變中心',
   equipment:'🔧 設備台帳',energy:'📊 能源監測',patrol:'👥 人力 & 值班管理',
-  monthly:'📅 月報彙整',expense:'💰 費用結算'
+  monthly:'📅 月報彙整',expense:'💰 費用結算',vehicle:'🚐 車輛調度中心',cctv:'📹 CCTV 即時監控'
 };
 function switchPage(page) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -1737,6 +1829,8 @@ function switchPage(page) {
   if(page==='equipment') renderEquipTable();
   if(page==='energy') renderEnergy();
   if(page==='emergency') { renderTimers('em-timers-full'); renderSOP('sop-full'); }
+  if(page==='vehicle') { renderAmbTable(); renderAmbLive(); renderCarTable(); renderCarLive(); }
+  if(page==='cctv') { renderCCTVGrid(); renderCCTVEvents(); }
 }
 
 // ===== MODAL =====
@@ -1971,6 +2065,135 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// ===== VEHICLE DATA =====
+const ambulanceTasks = [
+  { id:'AMB-2604-001', type:'病患轉運', route:'復興路館 門診區 → 南海街館 病房區', time:'14:30–14:50', driver:'張○○（工務）', unit:'內科病房', status:'inprogress' },
+  { id:'AMB-2604-002', type:'醫療物資運送', route:'南海街館 病房區 → 復興路館 門診區', time:'15:10–15:25', driver:'李○○（工務）', unit:'手術室', status:'waiting' },
+  { id:'AMB-2604-003', type:'檢體送達', route:'復興路館 急診區 → 南海街館 病房區', time:'16:00–16:15', driver:'張○○（工務）', unit:'檢驗科', status:'done' }
+];
+const officialRides = [
+  { id:'CAR-2604-001', plate:'ABC-1234', time:'09:00–11:00', from:'復興路館', to:'桃園市政府', unit:'資訊室', person:'林○○', pax:3, status:'done' },
+  { id:'CAR-2604-002', plate:'DEF-5678', time:'13:30–15:30', from:'南海街館', to:'聯新總院', unit:'行政室', person:'王○○', pax:2, status:'inprogress' },
+  { id:'CAR-2604-003', plate:'', time:'16:30–17:30', from:'復興路館', to:'衛生局', unit:'護理部', person:'陳○○', pax:2, status:'waiting' }
+];
+const officialCars = [
+  { plate:'ABC-1234', type:'7人座', site:'復興路館', status:'free' },
+  { plate:'DEF-5678', type:'5人座', site:'南海街館', status:'running' },
+  { plate:'GHI-9012', type:'5人座', site:'復興路館', status:'free' },
+  { plate:'JKL-3456', type:'廂型車', site:'南海街館', status:'maintenance' },
+  { plate:'MNO-7890', type:'5人座', site:'復興路館', status:'reserved' },
+];
+let ambCounter = 4;
+let carCounter = 4;
+
+function rideStatusBadge(s) {
+  if (s === 'waiting') return '<span class="badge badge-warning">待出車</span>';
+  if (s === 'inprogress') return '<span class="badge badge-info">出車中</span>';
+  if (s === 'done') return '<span class="badge badge-success">已完成</span>';
+  if (s === 'cancel') return '<span class="badge badge-neutral">已取消</span>';
+  return s;
+}
+function carStateBadge(s) {
+  if (s === 'free') return '<span class="badge badge-success">可派</span>';
+  if (s === 'running') return '<span class="badge badge-info">出車中</span>';
+  if (s === 'maintenance') return '<span class="badge badge-warning">維修中</span>';
+  if (s === 'reserved') return '<span class="badge badge-neutral">預約</span>';
+  return s;
+}
+function renderAmbTable() {
+  const tbody = document.getElementById('amb-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = ambulanceTasks.map(t => `
+    <tr>
+      <td><span class="wo-id">${t.id}</span></td>
+      <td>${t.type}</td>
+      <td style="font-size:var(--text-xs)">${t.route}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${t.time}</td>
+      <td style="font-size:var(--text-xs)">${t.driver}</td>
+      <td style="font-size:var(--text-xs)">${t.unit}</td>
+      <td>${rideStatusBadge(t.status)}</td>
+    </tr>`).join('');
+  const active = ambulanceTasks.filter(t => t.status === 'inprogress').length;
+  document.getElementById('kpi-amb-today').textContent = ambulanceTasks.length;
+  document.getElementById('kpi-amb-active').textContent = active;
+}
+function renderAmbLive() {
+  const el = document.getElementById('amb-live');
+  if(!el) return;
+  el.innerHTML = ambulanceTasks.filter(t => t.status === 'inprogress' || t.status === 'waiting').map(t => `
+    <div class="timer-card" style="border-color:${t.status==='inprogress'?'var(--color-primary)':'var(--color-warning)'}">
+      <div class="timer-ring-wrap"><div class="timer-inner" style="position:static;width:64px;height:64px;background:var(--color-surface-offset);border-radius:50%;display:flex;align-items:center;justify-content:center;color:${t.status==='inprogress'?'var(--color-primary)':'var(--color-warning)'}">${t.status==='inprogress'?'出勤中':'待命'}</div></div>
+      <div class="timer-info">
+        <div class="timer-label">${t.id}</div>
+        <div class="timer-title">${t.type}</div>
+        <div class="timer-sub">${t.route}｜${t.time}｜${t.driver}</div>
+      </div>
+    </div>`).join('') || '<div style="font-size:var(--text-sm);color:var(--color-text-muted)">目前沒有進行中的救護車任務</div>';
+}
+function renderCarTable() {
+  const tbody = document.getElementById('car-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = officialRides.map(r => `
+    <tr>
+      <td><span class="wo-id">${r.id}</span></td>
+      <td style="font-family:var(--font-mono);font-size:11px">${r.plate || '待派車'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${r.time}</td>
+      <td style="font-size:var(--text-xs)">${r.from} → ${r.to}</td>
+      <td style="font-size:var(--text-xs)">${r.unit} / ${r.person}</td>
+      <td>${r.pax}</td>
+      <td>${rideStatusBadge(r.status)}</td>
+    </tr>`).join('');
+  const active = officialRides.filter(r => r.status === 'inprogress').length;
+  document.getElementById('kpi-car-today').textContent = officialRides.length;
+  document.getElementById('kpi-car-active').textContent = active;
+}
+function renderCarLive() {
+  const el = document.getElementById('car-live');
+  if(!el) return;
+  el.innerHTML = officialCars.map(c => `
+    <div class="equip-card">
+      <div class="equip-header"><div class="equip-name">${c.plate}</div>${carStateBadge(c.status)}</div>
+      <div class="equip-row"><span>車型</span><span>${c.type}</span></div>
+      <div class="equip-row"><span>駐點</span><span>${c.site}</span></div>
+    </div>`).join('');
+  const freeCars = officialCars.filter(c => c.status === 'free').length;
+  document.getElementById('kpi-car-free').textContent = `${freeCars} / ${officialCars.length}`;
+}
+function switchVehicleTab(tab, btn) {
+  document.querySelectorAll('.vehicle-tab').forEach(t => t.style.display = 'none');
+  const panel = document.getElementById('vehicle-tab-' + tab);
+  if(panel) panel.style.display = 'block';
+  document.querySelectorAll('.vehicle-switcher').forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-secondary'); });
+  if(btn){ btn.classList.remove('btn-secondary'); btn.classList.add('btn-primary'); }
+  if(tab === 'ambulance') { renderAmbTable(); renderAmbLive(); }
+  if(tab === 'official') { renderCarTable(); renderCarLive(); }
+}
+function submitAmb() {
+  const type = document.getElementById('amb-type').value;
+  const from = document.getElementById('amb-from').value;
+  const to = document.getElementById('amb-to').value;
+  const start = document.getElementById('amb-start').value || '08:00';
+  const dur = parseInt(document.getElementById('amb-duration').value || '20', 10);
+  const driver = document.getElementById('amb-driver').value;
+  const unit = document.getElementById('amb-unit').value || '未填寫';
+  const [h,m] = start.split(':').map(Number);
+  const d = new Date(); d.setHours(h, m + dur);
+  const end = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  ambulanceTasks.unshift({ id:`AMB-2604-${String(ambCounter++).padStart(3,'0')}`, type, route:`${from} → ${to}`, time:`${start}–${end}`, driver, unit, status:'waiting' });
+  renderAmbTable(); renderAmbLive(); closeModal('newAmb');
+}
+function submitCar() {
+  const time = document.getElementById('car-time').value || '09:00–10:00';
+  const from = document.getElementById('car-from').value || '未填寫';
+  const to = document.getElementById('car-to').value || '未填寫';
+  const unit = document.getElementById('car-unit').value || '未填寫';
+  const person = document.getElementById('car-contact').value || '';
+  const pax = parseInt(document.getElementById('car-pax').value || '1', 10);
+  officialRides.unshift({ id:`CAR-2604-${String(carCounter++).padStart(3,'0')}`, plate:'', time, from, to, unit, person, pax, status:'waiting' });
+  renderCarTable(); closeModal('newCar');
+}
+
+
 // ===== CCTV DATA =====
 const cctvCameras = [
   { id:'CAM-F01', name:'大門入口', site:'復興路館', ip:'192.168.1.101', status:'ok', lastUpdate:'2分鐘前' },
@@ -1998,7 +2221,6 @@ const cctvCameras = [
   { id:'CAM-S07', name:'後門', site:'南海街館', ip:'192.168.2.107', status:'ok', lastUpdate:'5分鐘前' },
   { id:'CAM-S08', name:'機房', site:'南海街館', ip:'192.168.2.108', status:'ok', lastUpdate:'2分鐘前' }
 ];
-
 const cctvEvents = [
   { time:'2026-04-04 18:45', cam:'CAM-F05 電梯廳A', type:'設備故障', desc:'攝影機離線，疑似電源異常', status:'處理中' },
   { time:'2026-04-04 15:30', cam:'CAM-F11 後門安全梯', type:'畫面異常', desc:'畫面模糊不清', status:'待處理' },
@@ -2006,94 +2228,63 @@ const cctvEvents = [
   { time:'2026-04-03 14:20', cam:'CAM-F03 門診大廳', type:'人員跌倒', desc:'長者跌倒，已通知醫護', status:'已處理' },
   { time:'2026-04-02 09:15', cam:'CAM-F06 停車場入口', type:'車輛擦撞', desc:'兩車輕微擦撞', status:'已處理' }
 ];
-
 let cctvEventCounter = 6;
-
 function cctvStatusBadge(s) {
   if (s === 'ok') return '<span class="badge badge-success">正常</span>';
   if (s === 'offline') return '<span class="badge badge-error">離線</span>';
   if (s === 'warning') return '<span class="badge badge-warning">異常</span>';
   return s;
 }
-
 function eventStatusBadge(s) {
   if (s === '已處理') return '<span class="badge badge-success">已處理</span>';
   if (s === '處理中') return '<span class="badge badge-info">處理中</span>';
   if (s === '待處理') return '<span class="badge badge-warning">待處理</span>';
   return s;
 }
-
 function renderCCTVGrid(filter = 'all') {
   const grid = document.getElementById('cctv-grid');
   if (!grid) return;
   const filtered = filter === 'all' ? cctvCameras : cctvCameras.filter(c => c.site === filter);
   grid.innerHTML = filtered.map(cam => {
-    const borderColor = cam.status === 'ok' ? 'var(--color-success)' : 
-                        cam.status === 'offline' ? 'var(--color-error)' : 'var(--color-warning)';
-    const bgGradient = cam.status === 'ok' ? 
-      'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' :
-      cam.status === 'offline' ? 
-      'linear-gradient(135deg, #2d1b1b 0%, #3a1f1f 100%)' :
-      'linear-gradient(135deg, #2d2716 0%, #3a3320 100%)';
-    return `
-      <div class="cctv-feed" style="border:2px solid ${borderColor};border-radius:var(--radius-md);overflow:hidden;background:${bgGradient}">
-        <div style="aspect-ratio:16/9;background:${bgGradient};position:relative;display:flex;align-items:center;justify-content:center">
-          ${cam.status === 'ok' ? 
-            '<div style="width:100%;height:100%;background:radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);display:flex;align-items:center;justify-content:center;color:var(--color-text-faint);font-size:var(--text-xs)">🎥 LIVE</div>' :
-            cam.status === 'offline' ?
-            '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-error);font-size:var(--text-sm)">⚠ 離線</div>' :
-            '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-warning);font-size:var(--text-sm)">⚠ 異常</div>'
-          }
-          <div style="position:absolute;top:8px;left:8px;background:oklch(0 0 0 / 0.7);padding:4px 8px;border-radius:4px;font-size:10px;color:#fff;font-family:var(--font-mono)">${cam.id}</div>
-          <div style="position:absolute;top:8px;right:8px">${cctvStatusBadge(cam.status)}</div>
-          ${cam.status === 'ok' ? '<div style="position:absolute;bottom:8px;right:8px;width:8px;height:8px;background:var(--color-error);border-radius:50%;animation:blink 1.5s infinite"></div>' : ''}
-        </div>
-        <div style="padding:var(--space-3);background:var(--color-surface)">
-          <div style="font-weight:600;font-size:var(--text-sm);margin-bottom:4px">${cam.name}</div>
-          <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--color-text-muted)">
-            <span>${cam.site}</span>
-            <span>${cam.lastUpdate}</span>
-          </div>
-        </div>
+    const borderColor = cam.status === 'ok' ? 'var(--color-success)' : cam.status === 'offline' ? 'var(--color-error)' : 'var(--color-warning)';
+    const bgGradient = cam.status === 'ok' ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' : cam.status === 'offline' ? 'linear-gradient(135deg, #2d1b1b 0%, #3a1f1f 100%)' : 'linear-gradient(135deg, #2d2716 0%, #3a3320 100%)';
+    return `<div class="cctv-feed" style="border:2px solid ${borderColor};border-radius:var(--radius-md);overflow:hidden;background:${bgGradient}">
+      <div style="aspect-ratio:16/9;background:${bgGradient};position:relative;display:flex;align-items:center;justify-content:center">
+        ${cam.status === 'ok' ? '<div style="width:100%;height:100%;background:radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);display:flex;align-items:center;justify-content:center;color:var(--color-text-faint);font-size:var(--text-xs)">🎥 LIVE</div>' : cam.status === 'offline' ? '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-error);font-size:var(--text-sm)">⚠ 離線</div>' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-warning);font-size:var(--text-sm)">⚠ 異常</div>'}
+        <div style="position:absolute;top:8px;left:8px;background:oklch(0 0 0 / 0.7);padding:4px 8px;border-radius:4px;font-size:10px;color:#fff;font-family:var(--font-mono)">${cam.id}</div>
+        <div style="position:absolute;top:8px;right:8px">${cctvStatusBadge(cam.status)}</div>
+        ${cam.status === 'ok' ? '<div style="position:absolute;bottom:8px;right:8px;width:8px;height:8px;background:var(--color-error);border-radius:50%;animation:blink 1.5s infinite"></div>' : ''}
       </div>
-    `;
+      <div style="padding:var(--space-3);background:var(--color-surface)">
+        <div style="font-weight:600;font-size:var(--text-sm);margin-bottom:4px">${cam.name}</div>
+        <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--color-text-muted)"><span>${cam.site}</span><span>${cam.lastUpdate}</span></div>
+      </div>
+    </div>`;
   }).join('');
 }
-
 function renderCCTVTable() {
   const tbody = document.getElementById('cctv-tbody');
   if (!tbody) return;
-  tbody.innerHTML = cctvCameras.map(c => `
-    <tr>
-      <td><span class="wo-id">${c.id}</span></td>
-      <td>${c.name}</td>
-      <td>${c.site}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${c.ip}</td>
-      <td>${cctvStatusBadge(c.status)}</td>
-      <td style="font-size:var(--text-xs);color:var(--color-text-muted)">${c.lastUpdate}</td>
-      <td><button class="btn btn-xs btn-secondary" onclick="alert('重啟功能開發中')">重啟</button></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = cctvCameras.map(c => `<tr>
+    <td><span class="wo-id">${c.id}</span></td><td>${c.name}</td><td>${c.site}</td>
+    <td style="font-family:var(--font-mono);font-size:11px">${c.ip}</td>
+    <td>${cctvStatusBadge(c.status)}</td>
+    <td style="font-size:var(--text-xs);color:var(--color-text-muted)">${c.lastUpdate}</td>
+    <td><button class="btn btn-xs btn-secondary" onclick="alert('重啟功能開發中')">重啟</button></td>
+  </tr>`).join('');
 }
-
 function renderCCTVEvents() {
   const tbody = document.getElementById('cctv-events-tbody');
   if (!tbody) return;
-  tbody.innerHTML = cctvEvents.map(e => `
-    <tr>
-      <td style="font-family:var(--font-mono);font-size:11px">${e.time}</td>
-      <td style="font-size:var(--text-xs)">${e.cam}</td>
-      <td><span class="badge badge-neutral">${e.type}</span></td>
-      <td style="font-size:var(--text-xs)">${e.desc}</td>
-      <td>${eventStatusBadge(e.status)}</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = cctvEvents.map(e => `<tr>
+    <td style="font-family:var(--font-mono);font-size:11px">${e.time}</td>
+    <td style="font-size:var(--text-xs)">${e.cam}</td>
+    <td><span class="badge badge-neutral">${e.type}</span></td>
+    <td style="font-size:var(--text-xs)">${e.desc}</td>
+    <td>${eventStatusBadge(e.status)}</td>
+  </tr>`).join('');
 }
-
-function filterCCTV(site) {
-  renderCCTVGrid(site);
-}
-
+function filterCCTV(site) { renderCCTVGrid(site); }
 function toggleCCTVView(view) {
   if (view === 'grid') {
     document.getElementById('cctv-grid-view').style.display = 'block';
@@ -2104,7 +2295,6 @@ function toggleCCTVView(view) {
     renderCCTVTable();
   }
 }
-
 function submitCCTVEvent() {
   const cam = document.getElementById('cctv-event-cam').value;
   const type = document.getElementById('cctv-event-type').value;
@@ -2125,6 +2315,12 @@ renderEquipStatus();
 renderTimers('timers-list');
 renderSOP('sop-quick');
 renderActivity();
+renderAmbTable();
+renderAmbLive();
+renderCarTable();
+renderCarLive();
+renderCCTVGrid();
+renderCCTVEvents();
 lucide.createIcons();
 </script>
 </body>
